@@ -1,0 +1,25 @@
+{
+    "useWhiteList": false,
+    "jdbc": {
+        "username": "scott",
+        "password": "tiger",
+        "url": "foo:bar"
+    },
+    "server": {
+        "port": 99
+    },
+    "peer": [
+        {
+            "url": "http://bogus1.com"
+        },
+        {
+            "url": "http://bogus2.com"
+        }
+    ],
+    "keys": {
+        "passwords": [],
+        "keyData": []
+    },
+    "alwaysSendTo": [],
+    "unixSocketFile": "/tmp/bogus.socket"
+}

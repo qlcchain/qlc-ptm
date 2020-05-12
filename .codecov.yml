@@ -1,0 +1,5 @@
+ignore:
+  - "**/Main.java"
+  - "**/Launcher.java"
+  - "**/ConsolePasswordReader.java"
+  - "**/PasswordReaderFactory.java"

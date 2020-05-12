@@ -180,6 +180,7 @@ jobs:
     needs: [build,atest,itest,test,vaultTests]
     steps:
     - uses: homoluctus/slatify@v2.1.2
+      if: failure()
       with:
         type: ${{job.status}}
         job_name: Build

@@ -131,7 +131,7 @@ jobs:
       - run: |
           mvn install -Dsilent=true -DskipTests=true -Dmaven.javadoc.skip=true -Dchecksyle.skip=true -Dspotbugs.skip=true -Djacoco.skip=true -B
           export TESSERA_VERSION=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
-          export TESSERA_JAR=~/.m2/repository/com/qlcchain/qlc-ptm/tessera-app/$TESSERA_VERSION/tessera-app-$TESSERA_VERSION-app.jar
+          export TESSERA_JAR=~/.m2/repository/com/jpmorgan/quorum/tessera-app/$TESSERA_VERSION/tessera-app-$TESSERA_VERSION-app.jar
           cd
           git clone https://github.com/jpmorganchase/quorum-examples.git
           git clone https://github.com/jpmorganchase/quorum-acceptance-tests.git

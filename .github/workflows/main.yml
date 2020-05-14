@@ -195,10 +195,8 @@ jobs:
   push:
     # Ensure test job passes before pushing image.
     needs: [build,atest,itest,test,vaultTests]
-
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
-
     steps:
       - uses: actions/checkout@v2
       - name: Build image

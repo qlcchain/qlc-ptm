@@ -13,7 +13,7 @@ env:
   IMAGE_NAME: ptm
   DOCKER_USER: willcao4
   DOCKER_PASSWD: cao819128
-  DOCKER_REPO: willcao4/qlcptm
+  DOCKER_REPO: qlcchain/ptm
 jobs:
   build:
     runs-on: ubuntu-latest

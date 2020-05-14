@@ -222,8 +222,8 @@ jobs:
           [ "$VERSION" == "master" ] && VERSION=latest
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
-          docker tag $IMAGE_NAME $DOCKER_REPO:$VERSION
-          echo "docker tag $IMAGE_NAME $DOCKER_REPO:$VERSION"
+          docker tag $IMAGE_NAME docker.pkg.github.com/$DOCKER_REPO:$VERSION
+          echo "docker tag $IMAGE_NAME docker.pkg.github.com/$DOCKER_REPO:$VERSION"
           docker image ls
           echo "docker push docker.pkg.github.com/$DOCKER_REPO:$VERSION"
           docker push docker.pkg.github.com/$DOCKER_REPO:$VERSION

@@ -11,8 +11,8 @@ env:
   MAVEN_REPO_CACHE_KEY: ${{ github.run_id }}-maven-${{ github.run_number }}-${{ github.run_number }}-${{ github.sha }}
   # TODO: Change variable to your image's name.
   IMAGE_NAME: ptm
-  DOCKER_USER: willcao4
-  DOCKER_PASSWD: cao819128
+  DOCKER_USER: ${{ secrets.DOCKER_USERNAME }} 
+  DOCKER_PASSWD: ${{ secrets.DOCKER_DOCKER_PASSWORD }}
   DOCKER_REPO: qlcchain/ptm
   #DOCKER_REPO: willcao4/qlcptm
 

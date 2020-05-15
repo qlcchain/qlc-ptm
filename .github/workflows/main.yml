@@ -12,7 +12,7 @@ env:
   # TODO: Change variable to your image's name.
   IMAGE_NAME: ptm
   DOCKER_USER: ${{ secrets.DOCKER_USERNAME }} 
-  DOCKER_PASSWD: ${{ secrets.DOCKER_DOCKER_PASSWORD }}
+  DOCKER_PASSWD: ${{ secrets.DOCKER_PASSWORD }}
   DOCKER_REPO: qlcchain/ptm
   #DOCKER_REPO: willcao4/qlcptm
 

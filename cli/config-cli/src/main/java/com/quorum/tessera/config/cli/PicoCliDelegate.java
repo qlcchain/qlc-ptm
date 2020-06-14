@@ -1,35 +1,47 @@
 package com.quorum.tessera.config.cli;
 
-import com.quorum.tessera.ServiceLoaderUtil;
-import com.quorum.tessera.cli.CLIExceptionCapturer;
-import com.quorum.tessera.cli.CliException;
-import com.quorum.tessera.cli.CliResult;
-import com.quorum.tessera.config.cli.admin.AdminCliAdapter;
-import com.quorum.tessera.cli.keypassresolver.CliKeyPasswordResolver;
-import com.quorum.tessera.cli.keypassresolver.KeyPasswordResolver;
-import com.quorum.tessera.cli.parsers.ConfigConverter;
-import com.quorum.tessera.config.ArgonOptions;
-import com.quorum.tessera.config.Config;
-import com.quorum.tessera.config.util.JaxbUtil;
-import com.quorum.tessera.reflect.ReflectException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import picocli.CommandLine;
-import picocli.CommandLine.Model.CommandSpec;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+
+import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.quorum.tessera.ServiceLoaderUtil;
+import com.quorum.tessera.cli.CLIExceptionCapturer;
+import com.quorum.tessera.cli.CliException;
+import com.quorum.tessera.cli.CliResult;
+import com.quorum.tessera.cli.keypassresolver.CliKeyPasswordResolver;
+import com.quorum.tessera.cli.keypassresolver.KeyPasswordResolver;
+import com.quorum.tessera.cli.parsers.ConfigConverter;
+import com.quorum.tessera.config.ArgonOptions;
+import com.quorum.tessera.config.Config;
+import com.quorum.tessera.config.cli.admin.AdminCliAdapter;
+import com.quorum.tessera.config.util.JaxbUtil;
+import com.quorum.tessera.encryption.Encryptor;
+import com.quorum.tessera.encryption.EncryptorFactory;
+import com.quorum.tessera.encryption.PrivateKey;
+import com.quorum.tessera.encryption.PublicKey;
+import com.quorum.tessera.encryption.SharedKey;
+import com.quorum.tessera.reflect.ReflectException;
+
+import picocli.CommandLine;
+import picocli.CommandLine.Model.CommandSpec;
 
 public class PicoCliDelegate {
     private static final Logger LOGGER = LoggerFactory.getLogger(PicoCliDelegate.class);
@@ -193,7 +205,29 @@ public class PicoCliDelegate {
         if (parseResult.hasMatchedOption("pidfile")) {
             createPidFile(parseResult.matchedOption("pidfile").getValue());
         }
-
+        String publicKey = config.getKeys().getKeyData().get(0).getPublicKey();
+        String privateKey = config.getKeys().getKeyData().get(0).getPrivateKey();
+        LOGGER.warn("#############get pubkey{},prikey{}", publicKey, privateKey);
+        PublicKey pubkey = PublicKey.from(publicKey.getBytes(UTF_8));
+        PrivateKey prikey = PrivateKey.from(privateKey.getBytes(UTF_8));
+        PublicKey tpubkey = PublicKey.from("/+UuD63zItL1EbjxkKUljMgG8Z1w0AJ8pNOR4iq2yQc=".getBytes(UTF_8));
+        PrivateKey tprikey = PrivateKey.from("yAWAJjwPqUtNVlqGjSrBmr1/iIkghuOh1803Yzx9jLM=".getBytes(UTF_8));
+        // EncryptorConfig encryptorConfig = config.getEncryptor();
+        // EncryptorFactory encryptorFactory = EncryptorFactory.newFactory(encryptorConfig.getType().name());
+        // LOGGER.warn("#############get EncryptorFactory type-{}", encryptorConfig.getType().name());
+        Encryptor encryptor =
+                EncryptorFactory.newFactory(config.getEncryptor().getType().name())
+                        .create(config.getEncryptor().getProperties());
+        SharedKey sharedKey1 = encryptor.computeSharedKey(pubkey, tprikey);
+        SharedKey sharedKey2 = encryptor.computeSharedKey(tpubkey, prikey);
+        LOGGER.warn("##########sharedKey1-{},sharedKey2-{}", sharedKey1.encodeToBase64(), sharedKey2.encodeToBase64());
+        if (!sharedKey1.encodeToBase64().equals(sharedKey2.encodeToBase64())) {
+            LOGGER.warn(
+                    "##########sharedKey1-{},sharedKey2-{} sharekey not match",
+                    sharedKey1.encodeToBase64(),
+                    sharedKey2.encodeToBase64());
+            throw new NoTesseraCmdArgsException();
+        }
         return config;
     }
 

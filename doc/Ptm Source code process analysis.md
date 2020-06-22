@@ -47,7 +47,7 @@ HASH VARBINARY(100) NOT NULL, PRIMARY KEY (HASH)
 
 ## 3服务启动流程
 
-a. 首先通过cli从配置文件tessera-config.json读取配置，根据配置创建运行时上下文（上下文持有当前节点公私钥对，peers列表等引用）
+a. 首先通过cli从配置文件config.json读取配置，根据配置创建运行时上下文（上下文持有当前节点公私钥对，peers列表等引用）
 b. 再将当前partyInfo保存到集合中(内存)
 c. 根据的serverConfigs循环创建ThirdPartyRestApp、P2PRestApp、Q2TRestApp(未包含EnclaveApplication)Restful服务
 d 启动服务监听

@@ -104,8 +104,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build image
         run: | 
-          docker build . --file Dockerfile --tag $IMAGE_NAME
           echo "docker build . --file Dockerfile --tag $IMAGE_NAME"
+          docker build . --file Dockerfile --tag $IMAGE_NAME
           docker image ls
 
       - name: Log into registry
@@ -126,8 +126,8 @@ jobs:
           [ "$VERSION" == "master" ] && VERSION=$IMAGE_VERSION
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
-          docker tag $IMAGE_NAME $DOCKER_REPO:$VERSION
           echo "docker tag $IMAGE_NAME $DOCKER_REPO:$VERSION"
+          docker tag $IMAGE_NAME $DOCKER_REPO:$VERSION
           docker image ls
           echo "docker push $DOCKER_REPO:$VERSION"
           docker push $DOCKER_REPO:$VERSION

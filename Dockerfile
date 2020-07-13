@@ -20,7 +20,7 @@ RUN apk add libjpeg-turbo=2.0.5-r0 --update-cache --repository http://dl-cdn.alp
 RUN apk add java-postgresql-jdbc=42.2.10-r0 --no-cache
 
 COPY --from=builder /tessera/tessera-dist/tessera-app/target/*-app.jar /tessera/tessera-app.jar
-RUN adduser tessera -u 11991 -D -s /bin/false
-USER 11991
+#RUN adduser tessera -u 11991 -D -s /bin/false
+#USER 11991
 
 ENTRYPOINT ["java", "-jar", "/tessera/tessera-app.jar"]

@@ -7,18 +7,14 @@ dependencyCheck {
     failBuildOnCVSS = 11
 }
 
-
-//application {
-//    mainClassName = 'com.quorum.tessera.launcher.Main'
-//    applicationDefaultJvmArgs = ['-Dtessera.cli.type=CONFIG']
-//
-//}
-
 dependencies {
-    compile "com.h2database:h2"
-    compile 'org.apache.commons:commons-lang3:3.7'
-    compile project(':config')
     compile project(':tessera-dist:tessera-launcher')
+    compile project(':key-vault:azure-key-vault')
+    compile project(':key-vault:hashicorp-key-vault')
+    compile project(':key-vault:aws-key-vault')
+
+    compile "com.h2database:h2"
+    compile project(':config')
     compile project(':argon2')
     compile project(':encryption:encryption-api')
     compile project(':security')
@@ -27,17 +23,14 @@ dependencies {
     compile project(':tessera-core')
     compile project(':cli:cli-api')
     compile project(':cli:config-cli')
-    compile project(':tessera-jaxrs:sync-jaxrs')
-    compile project(':tessera-jaxrs:transaction-jaxrs')
-    compile project(':tessera-jaxrs:thirdparty-jaxrs')
+    runtimeOnly project(':tessera-jaxrs:sync-jaxrs')
+    runtimeOnly project(':tessera-jaxrs:transaction-jaxrs')
+    runtimeOnly project(':tessera-jaxrs:thirdparty-jaxrs')
     compile project(':enclave:enclave-jaxrs')
     compile project(':service-locator:service-locator-spring')
     compile 'org.slf4j:jcl-over-slf4j:1.7.5'
     compile 'org.slf4j:jul-to-slf4j:1.7.5'
     compile project(':server:jersey-server')
-    compile project(':key-vault:azure-key-vault')
-    compile project(':key-vault:hashicorp-key-vault')
-    compile project(':key-vault:aws-key-vault')
     compile 'org.glassfish.jersey.media:jersey-media-json-processing:2.27'
     compile project(':encryption:encryption-jnacl')
 

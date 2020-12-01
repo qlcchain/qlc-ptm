@@ -1,17 +1,17 @@
 package com.quorum.tessera.test;
 
+import com.quorum.tessera.config.Config;
 import com.quorum.tessera.config.EncryptorConfig;
+import com.quorum.tessera.config.ServerConfig;
+import com.quorum.tessera.config.keypairs.ConfigKeyPair;
 import com.quorum.tessera.config.keys.KeyEncryptor;
 import com.quorum.tessera.config.keys.KeyEncryptorFactory;
 import com.quorum.tessera.config.util.KeyDataUtil;
-import com.quorum.tessera.partyinfo.PartyInfoParser;
-import com.quorum.tessera.partyinfo.model.PartyInfo;
-import com.quorum.tessera.partyinfo.model.Recipient;
-import com.quorum.tessera.config.Config;
-import com.quorum.tessera.config.ServerConfig;
-import com.quorum.tessera.config.keypairs.ConfigKeyPair;
 import com.quorum.tessera.encryption.PublicKey;
 import com.quorum.tessera.jaxrs.client.ClientFactory;
+import com.quorum.tessera.p2p.partyinfo.PartyInfoParser;
+import com.quorum.tessera.partyinfo.model.PartyInfo;
+import com.quorum.tessera.partyinfo.model.Recipient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -70,7 +69,7 @@ public class PeerToPeerIT {
 
         String partyBServerAddress = partyB.getConfig().getP2PServerConfig().getServerAddress();
 
-        Recipient recipient = new Recipient(partyBKey, partyBServerAddress);
+        Recipient recipient = Recipient.of(partyBKey, partyBServerAddress);
 
         PartyInfo partyInfo =
                 new PartyInfo(partyBServerAddress, Collections.singleton(recipient), Collections.emptySet());
@@ -104,7 +103,7 @@ public class PeerToPeerIT {
 
         ServerConfig serverConfig = hihjackedParty.getConfig().getP2PServerConfig();
 
-        Recipient recipient = new Recipient(bogusKey, serverConfig.getServerUri().toString());
+        Recipient recipient = Recipient.of(bogusKey, serverConfig.getServerUri().toString());
 
         PartyInfo partyInfo =
                 new PartyInfo(
@@ -146,12 +145,12 @@ public class PeerToPeerIT {
                         .map(PublicKey::from)
                         .get();
 
-        Recipient itself = new Recipient(publicKey, serverConfig.getServerUri().toString());
+        Recipient itself = Recipient.of(publicKey, serverConfig.getServerUri().toString());
 
         String validButIncorrectUrl =
                 partyHelper.findByAlias(NodeAlias.C).getConfig().getP2PServerConfig().getServerAddress();
 
-        Recipient badRecipient = new Recipient(PublicKey.from("OUCH".getBytes()), validButIncorrectUrl);
+        Recipient badRecipient = Recipient.of(PublicKey.from("OUCH".getBytes()), validButIncorrectUrl);
 
         Set<Recipient> recipients = Stream.of(itself, badRecipient).collect(Collectors.toSet());
 
@@ -195,14 +194,14 @@ public class PeerToPeerIT {
                         .map(PublicKey::from)
                         .get();
 
-        Recipient itself = new Recipient(publicKey, serverConfig.getServerUri().toString());
+        Recipient itself = Recipient.of(publicKey, serverConfig.getServerUri().toString());
 
         String validKeyFromOtherNode = partyHelper.findByAlias(NodeAlias.C).getPublicKey();
 
         PublicKey validButIncorrectKey =
                 Optional.of(validKeyFromOtherNode).map(Base64.getDecoder()::decode).map(PublicKey::from).get();
 
-        Recipient badRecipient = new Recipient(validButIncorrectKey, "http://bogus.supersnide.com:8829");
+        Recipient badRecipient = Recipient.of(validButIncorrectKey, "http://bogus.supersnide.com:8829");
 
         Set<Recipient> recipients = Stream.of(itself, badRecipient).collect(Collectors.toSet());
 
@@ -241,7 +240,7 @@ public class PeerToPeerIT {
                         .map(PublicKey::from)
                         .get();
 
-        Recipient itself = new Recipient(publicKey, serverConfig.getServerUri().toString());
+        Recipient itself = Recipient.of(publicKey, serverConfig.getServerUri().toString());
 
         String validKeyFromOtherNode = partyHelper.findByAlias(NodeAlias.C).getPublicKey();
 
@@ -251,7 +250,7 @@ public class PeerToPeerIT {
         String workingUrlFromSomeOtherNode =
                 partyHelper.findByAlias(NodeAlias.D).getConfig().getP2PServerConfig().getServerAddress();
 
-        Recipient badRecipient = new Recipient(validButIncorrectKey, workingUrlFromSomeOtherNode);
+        Recipient badRecipient = Recipient.of(validButIncorrectKey, workingUrlFromSomeOtherNode);
 
         Set<Recipient> recipients = Stream.of(itself, badRecipient).collect(Collectors.toSet());
 

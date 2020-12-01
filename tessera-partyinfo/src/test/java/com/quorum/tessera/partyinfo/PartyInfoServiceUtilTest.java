@@ -1,12 +1,11 @@
 package com.quorum.tessera.partyinfo;
 
 import com.quorum.tessera.encryption.PublicKey;
-import com.quorum.tessera.partyinfo.model.PartyInfo;
-import com.quorum.tessera.partyinfo.model.Recipient;
+import com.quorum.tessera.partyinfo.node.NodeInfo;
+import com.quorum.tessera.partyinfo.node.Recipient;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,10 +16,18 @@ public class PartyInfoServiceUtilTest {
     public void validateEmptyRecipientListsAsValid() {
         final String url = "http://somedomain.com";
 
-        final Set<Recipient> existingRecipients = new HashSet<>();
-        final Set<Recipient> newRecipients = new HashSet<>();
-        final PartyInfo existingPartyInfo = new PartyInfo(url, existingRecipients, Collections.emptySet());
-        final PartyInfo newPartyInfo = new PartyInfo(url, newRecipients, Collections.emptySet());
+        final Set<Recipient> newRecipients = Set.of();
+
+        final NodeInfo existingPartyInfo = NodeInfo.Builder.create()
+            .withRecipients(newRecipients)
+            .withUrl(url)
+            .build();
+
+        final NodeInfo newPartyInfo = NodeInfo.Builder.create()
+            .withUrl(url)
+            .withRecipients(newRecipients)
+            .build();
+
 
         assertThat(PartyInfoServiceUtil.validateKeysToUrls(existingPartyInfo, newPartyInfo)).isTrue();
     }
@@ -30,11 +37,17 @@ public class PartyInfoServiceUtilTest {
         final String url = "http://somedomain.com";
         final PublicKey key = PublicKey.from("ONE".getBytes());
 
-        final Set<Recipient> existingRecipients = Collections.singleton(new Recipient(key, "http://one.com"));
-        final PartyInfo existingPartyInfo = new PartyInfo(url, existingRecipients, Collections.emptySet());
+        final Set<Recipient> existingRecipients = Collections.singleton(Recipient.of(key, "http://one.com"));
+        final NodeInfo existingPartyInfo = NodeInfo.Builder.create()
+            .withUrl(url)
+            .withRecipients(existingRecipients)
+            .build();
 
-        final Set<Recipient> newRecipients = Collections.singleton(new Recipient(key, "http://one.com"));
-        final PartyInfo newPartyInfo = new PartyInfo(url, newRecipients, Collections.emptySet());
+        final Set<Recipient> newRecipients = Collections.singleton(Recipient.of(key, "http://one.com"));
+        final NodeInfo newPartyInfo = NodeInfo.Builder.create()
+            .withUrl(url)
+            .withRecipients(newRecipients)
+            .build();
 
         assertThat(PartyInfoServiceUtil.validateKeysToUrls(existingPartyInfo, newPartyInfo)).isTrue();
     }
@@ -44,11 +57,17 @@ public class PartyInfoServiceUtilTest {
         final String url = "http://somedomain.com";
         final PublicKey key = PublicKey.from("ONE".getBytes());
 
-        final Set<Recipient> existingRecipients = Collections.singleton(new Recipient(key, "http://one.com"));
-        final PartyInfo existingPartyInfo = new PartyInfo(url, existingRecipients, Collections.emptySet());
+        final Set<Recipient> existingRecipients = Collections.singleton(Recipient.of(key, "http://one.com"));
+        final NodeInfo existingPartyInfo = NodeInfo.Builder.create()
+            .withUrl(url)
+            .withRecipients(existingRecipients)
+            .build();
 
-        final Set<Recipient> newRecipients = Collections.singleton(new Recipient(key, "http://two.com"));
-        final PartyInfo newPartyInfo = new PartyInfo(url, newRecipients, Collections.emptySet());
+        final Set<Recipient> newRecipients = Collections.singleton(Recipient.of(key, "http://two.com"));
+        final NodeInfo newPartyInfo = NodeInfo.Builder.create()
+            .withUrl(url)
+            .withRecipients(newRecipients)
+            .build();
 
         assertThat(PartyInfoServiceUtil.validateKeysToUrls(existingPartyInfo, newPartyInfo)).isFalse();
     }

@@ -16,7 +16,6 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-
 import javax.ws.rs.core.Application;
 import java.net.URI;
 import java.util.HashMap;

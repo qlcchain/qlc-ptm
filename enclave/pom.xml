@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>tessera</artifactId>
-        <groupId>com.jpmorgan.quorum</groupId>
-        <version>0.10.5</version>
+        <groupId>net.consensys.quorum.tessera</groupId>
+        <version>1.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -14,12 +14,4 @@
         <module>enclave-jaxrs</module>
         <module>enclave-server</module>
     </modules>
-    <profiles>
-        <profile>
-            <id>work-in-progress</id>
-            <modules>
-                <module>enclave-websockets</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>

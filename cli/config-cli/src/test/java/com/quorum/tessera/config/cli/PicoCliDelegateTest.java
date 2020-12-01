@@ -464,14 +464,15 @@ public class PicoCliDelegateTest {
         CliResult result =
                 cliDelegate.execute(
                         "-configfile", configFile.toString(),
-                        "-o", "peer[2].url=anotherpeer",
-                        "--override", "peer[3].url=yetanotherpeer");
+                        "-o", "peer[2].url=http://anotherpeer",
+                        "--override", "peer[3].url=http://yetanotherpeer");
 
         assertThat(result).isNotNull();
         assertThat(result.getConfig()).isPresent();
         assertThat(result.getConfig().get().getPeers()).hasSize(4);
         assertThat(result.getConfig().get().getPeers().stream().map(Peer::getUrl))
-                .containsExactlyInAnyOrder("anotherpeer", "yetanotherpeer", "http://bogus1.com", "http://bogus2.com");
+                .containsExactlyInAnyOrder(
+                        "http://anotherpeer", "http://yetanotherpeer", "http://bogus1.com", "http://bogus2.com");
     }
 
     @Test
@@ -549,7 +550,6 @@ public class PicoCliDelegateTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getConfig()).isPresent();
-        assertThat(result.getConfig()).isPresent();
         assertThat(result.getStatus()).isEqualTo(0);
 
         assertThat(result.isSuppressStartup()).isFalse();
@@ -567,7 +567,6 @@ public class PicoCliDelegateTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getConfig()).isPresent();
-        assertThat(result.getConfig()).isPresent();
         assertThat(result.getStatus()).isEqualTo(0);
 
         assertThat(result.isSuppressStartup()).isFalse();
@@ -580,7 +579,6 @@ public class PicoCliDelegateTest {
         CliResult result = cliDelegate.execute("-configfile", configFile.toString(), "-bogus", "bogus value");
 
         assertThat(result).isNotNull();
-        assertThat(result.getConfig()).isPresent();
         assertThat(result.getConfig()).isPresent();
         assertThat(result.getStatus()).isEqualTo(0);
 
@@ -597,7 +595,6 @@ public class PicoCliDelegateTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getConfig()).isPresent();
-        assertThat(result.getConfig()).isPresent();
         assertThat(result.getStatus()).isEqualTo(0);
 
         assertThat(result.isSuppressStartup()).isFalse();
@@ -606,5 +603,18 @@ public class PicoCliDelegateTest {
         assertThat(config.getJdbcConfig()).isNotNull();
         assertThat(config.getJdbcConfig().isAutoCreateTables()).isTrue();
         assertThat(config.getJdbcConfig().getUrl()).isEqualTo("someurl");
+    }
+
+    @Test
+    public void withRecoverMode() throws Exception {
+        Path configFile = createAndPopulatePaths(getClass().getResource("/sample-config.json"));
+        CliResult result = cliDelegate.execute("-configfile", configFile.toString(), "-r");
+
+        assertThat(result).isNotNull();
+        assertThat(result.getConfig()).isPresent();
+        assertThat(result.getStatus()).isEqualTo(0);
+
+        Config config = result.getConfig().get();
+        assertThat(config.isRecoveryMode()).isTrue();
     }
 }

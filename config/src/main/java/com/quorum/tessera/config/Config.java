@@ -15,6 +15,7 @@ import java.util.List;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 @ValidEitherServerConfigsOrServer
+@ValidServerConfigs
 @HasKeysOrRemoteEnclave
 public class Config extends ConfigItem {
 
@@ -26,7 +27,6 @@ public class Config extends ConfigItem {
     private JdbcConfig jdbcConfig;
 
     @Valid
-    @ValidServerConfigs
     @XmlElement(name = "serverConfigs", required = true)
     private List<@Valid @ValidServerConfig ServerConfig> serverConfigs;
 
@@ -55,11 +55,15 @@ public class Config extends ConfigItem {
 
     @XmlAttribute private boolean disablePeerDiscovery;
 
+    @XmlAttribute private boolean bootstrapNode;
+
     @XmlElement private DeprecatedServerConfig server;
 
     @XmlElement private FeatureToggles features = new FeatureToggles();
 
     @XmlElement private EncryptorConfig encryptor;
+
+    @XmlTransient private boolean recoveryMode;
 
     @Deprecated
     public Config(
@@ -87,7 +91,7 @@ public class Config extends ConfigItem {
         return this.jdbcConfig;
     }
 
-    // TODO: Shouldn't need to laziely recalcuate on a getter
+    // TODO: Shouldn't need to lazily recalculate on a getter
     public List<ServerConfig> getServerConfigs() {
         if (null != this.serverConfigs) {
             return this.serverConfigs;
@@ -127,6 +131,10 @@ public class Config extends ConfigItem {
         return disablePeerDiscovery;
     }
 
+    public boolean isBootstrapNode() {
+        return this.bootstrapNode;
+    }
+
     public void addPeer(Peer peer) {
         if (peers == null) {
             this.peers = new ArrayList<>();
@@ -136,10 +144,7 @@ public class Config extends ConfigItem {
 
     public ServerConfig getP2PServerConfig() {
         // TODO need to revisit
-        return getServerConfigs().stream()
-                .filter(sc -> sc.getApp() == AppType.P2P)
-                .findFirst()
-                .orElse(null);
+        return getServerConfigs().stream().filter(sc -> sc.getApp() == AppType.P2P).findFirst().orElse(null);
     }
 
     @Deprecated
@@ -185,6 +190,10 @@ public class Config extends ConfigItem {
         this.disablePeerDiscovery = disablePeerDiscovery;
     }
 
+    public void setBootstrapNode(boolean bootstrapNode) {
+        this.bootstrapNode = bootstrapNode;
+    }
+
     public String getVersion() {
         return version;
     }
@@ -203,5 +212,13 @@ public class Config extends ConfigItem {
 
     public void setEncryptor(EncryptorConfig encryptor) {
         this.encryptor = encryptor;
+    }
+
+    public boolean isRecoveryMode() {
+        return recoveryMode;
+    }
+
+    public void setRecoveryMode(boolean recoveryMode) {
+        this.recoveryMode = recoveryMode;
     }
 }

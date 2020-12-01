@@ -1,10 +1,14 @@
 package com.quorum.tessera.p2p;
 
-import com.quorum.tessera.core.api.ServiceFactory;
-import com.quorum.tessera.partyinfo.ResendRequest;
-import com.quorum.tessera.partyinfo.ResendResponse;
+import com.quorum.tessera.encryption.PublicKey;
+import com.quorum.tessera.p2p.recovery.ResendBatchRequest;
+import com.quorum.tessera.enclave.PayloadEncoder;
 import com.quorum.tessera.data.MessageHash;
+import com.quorum.tessera.recovery.resend.ResendBatchResponse;
+import com.quorum.tessera.recovery.workflow.BatchResendManager;
+import com.quorum.tessera.p2p.resend.ResendRequest;
 import com.quorum.tessera.transaction.TransactionManager;
+import com.quorum.tessera.util.Base64Codec;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +21,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.util.Base64;
 import java.util.Objects;
+import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.*;
 
@@ -33,14 +39,19 @@ public class TransactionResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionResource.class);
 
-    private final TransactionManager delegate;
+    private final TransactionManager transactionManager;
 
-    public TransactionResource() {
-        this(ServiceFactory.create().transactionManager());
-    }
+    private final BatchResendManager batchResendManager;
 
-    public TransactionResource(TransactionManager delegate) {
-        this.delegate = Objects.requireNonNull(delegate);
+    private final PayloadEncoder payloadEncoder;
+
+    public TransactionResource(
+            TransactionManager transactionManager,
+            BatchResendManager batchResendManager,
+            PayloadEncoder payloadEncoder) {
+        this.transactionManager = Objects.requireNonNull(transactionManager);
+        this.batchResendManager = Objects.requireNonNull(batchResendManager);
+        this.payloadEncoder = Objects.requireNonNull(payloadEncoder);
     }
 
     @ApiOperation("Resend transactions for given key or message hash/recipient")
@@ -57,9 +68,64 @@ public class TransactionResource {
 
         LOGGER.debug("Received resend request");
 
-        ResendResponse response = delegate.resend(resendRequest);
+        PublicKey recipient =
+                Optional.of(resendRequest)
+                        .map(ResendRequest::getPublicKey)
+                        .map(Base64Codec.create()::decode)
+                        .map(PublicKey::from)
+                        .get();
+
+        MessageHash transactionHash =
+                Optional.ofNullable(resendRequest)
+                        .map(ResendRequest::getKey)
+                        .map(Base64.getDecoder()::decode)
+                        .map(MessageHash::new)
+                        .orElse(null);
+
+        com.quorum.tessera.transaction.ResendRequest request =
+                com.quorum.tessera.transaction.ResendRequest.Builder.create()
+                        .withType(
+                                com.quorum.tessera.transaction.ResendRequest.ResendRequestType.valueOf(
+                                        resendRequest.getType().name()))
+                        .withRecipient(recipient)
+                        .withHash(transactionHash)
+                        .build();
+
+        com.quorum.tessera.transaction.ResendResponse response = transactionManager.resend(request);
         Response.ResponseBuilder builder = Response.status(Status.OK);
-        response.getPayload().ifPresent(builder::entity);
+        Optional.ofNullable(response.getPayload()).map(payloadEncoder::encode).ifPresent(builder::entity);
+        return builder.build();
+    }
+
+    @ApiOperation("Resend transaction batches for given recipient key")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "The transaction total that has been pushed", response = String.class),
+        @ApiResponse(code = 500, message = "General error")
+    })
+    @POST
+    @Path("resendBatch")
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public Response resendBatch(
+            @ApiParam(name = "resendBatchRequest", required = true) @Valid @NotNull
+                    final ResendBatchRequest resendBatchRequest) {
+
+        LOGGER.debug("Received resend request");
+
+        com.quorum.tessera.recovery.resend.ResendBatchRequest request =
+                com.quorum.tessera.recovery.resend.ResendBatchRequest.Builder.create()
+                        .withPublicKey(resendBatchRequest.getPublicKey())
+                        .withBatchSize(resendBatchRequest.getBatchSize())
+                        .build();
+
+        ResendBatchResponse response = batchResendManager.resendBatch(request);
+
+        com.quorum.tessera.p2p.recovery.ResendBatchResponse responseEntity =
+                new com.quorum.tessera.p2p.recovery.ResendBatchResponse();
+        responseEntity.setTotal(response.getTotal());
+
+        Response.ResponseBuilder builder = Response.status(Response.Status.OK);
+        builder.entity(responseEntity);
         return builder.build();
     }
 
@@ -76,9 +142,9 @@ public class TransactionResource {
 
         LOGGER.debug("Received push request");
 
-        final MessageHash messageHash = delegate.storePayload(payload);
-        LOGGER.debug("Push request generated hash {}", Objects.toString(messageHash));
-        // TODO: Return the query url not the string of the messageHAsh
+        final MessageHash messageHash = transactionManager.storePayload(payloadEncoder.decode(payload));
+        LOGGER.debug("Push request generated hash {}", messageHash);
+        // TODO: Return the query url not the string of the messageHash
         return Response.status(Response.Status.CREATED).entity(Objects.toString(messageHash)).build();
     }
 }

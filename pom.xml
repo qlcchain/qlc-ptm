@@ -3,24 +3,24 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.jpmorgan.quorum</groupId>
+    <groupId>net.consensys.quorum.tessera</groupId>
     <artifactId>tessera</artifactId>
-    <version>0.10.5</version>
+    <version>1.0.0</version>
 
     <name>tessera</name>
     <packaging>pom</packaging>
 
-    <url>https://github.com/jpmorganchase/tessera</url>
+    <url>https://github.com/ConsenSys/tessera</url>
     <issueManagement>
         <system>github</system>
-        <url>https://github.com/jpmorganchase/tessera/issues</url>
+        <url>https://github.com/ConsenSys/tessera/issues</url>
     </issueManagement>
 
     <scm>
-        <url>https://github.com/jpmorganchase/tessera</url>
-        <connection>scm:git:https://github.com/jpmorganchase/tessera.git</connection>
-        <developerConnection>scm:git:https://github.com/jpmorganchase/tessera.git</developerConnection>
-        <tag>tessera-0.10.5</tag>
+        <url>https://github.com/ConsenSys/tessera</url>
+        <connection>scm:git:https://github.com/ConsenSys/tessera.git</connection>
+        <developerConnection>scm:git:https://github.com/ConsenSys/tessera.git</developerConnection>
+        <tag>tessera-1.0.0</tag>
     </scm>
 
     <description>Tessera is a stateless Java system that is used to enable the encryption, decryption, and distribution
@@ -28,7 +28,7 @@
     </description>
 
     <ciManagement>
-        <url>https://travis-ci.com/jpmorganchase/tessera</url>
+        <url>https://github.com/ConsenSys/tessera/actions</url>
     </ciManagement>
 
     <licenses>
@@ -41,18 +41,18 @@
 
     <properties>
         <jersey.version>2.27</jersey.version>
-        <jetty.version>9.4.25.v20191220</jetty.version>
+        <jetty.version>9.4.33.v20201020</jetty.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <spring.version>5.2.3.RELEASE</spring.version>
+        <spring.version>5.2.9.RELEASE</spring.version>
         <slf4j.version>1.7.5</slf4j.version>
-        <eclipselink.version>2.7.3</eclipselink.version>
+        <eclipselink.version>2.7.7</eclipselink.version>
         <h2.version>1.4.200</h2.version>
         <owasp.plugin.version>5.0.0-M2</owasp.plugin.version>
         <bouncycastle.version>1.61</bouncycastle.version>
         <logback.version>1.2.3</logback.version>
-        <jackson.version>2.10.0.pr3</jackson.version>
+        <jackson.version>2.10.4</jackson.version>
         <project.scm.id>github</project.scm.id>
         <asm.version>7.0</asm.version>
         <jasypt.version>1.9.3</jasypt.version>
@@ -62,30 +62,30 @@
 
     <build>
 
-        <extensions>
+<!--         <extensions>
             <extension>
                 <groupId>ar.com.synergian</groupId>
                 <artifactId>wagon-git</artifactId>
-                <version>0.2.5</version>
+                <version>1.0.0</version>
             </extension>
-        </extensions>
+        </extensions> -->
 
         <pluginManagement>
 
             <plugins>
 
-                <plugin>
+<!--                <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.3</version>
+                    <version>0.8.5</version>
                     <dependencies>
                         <dependency>
                             <groupId>commons-collections</groupId>
                             <artifactId>commons-collections</artifactId>
-                            <version>3.2.1</version>
+                            <version>3.2.2</version>
                         </dependency>
                     </dependencies>
-                </plugin>
+                </plugin> -->
 
                 <plugin>
                     <groupId>org.pitest</groupId>
@@ -179,6 +179,12 @@
                         </dependency>
                     </dependencies>
                 </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.2</version>
+                </plugin>
             </plugins>
 
         </pluginManagement>
@@ -233,7 +239,7 @@
                 </configuration>
             </plugin>
 
-            <plugin>
+<!--             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>3.1.1</version>
@@ -268,9 +274,9 @@
                     </dependency>
 
                 </dependencies>
-            </plugin>
+            </plugin> -->
 
-            <plugin>
+            <!-- <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <configuration>
@@ -323,16 +329,15 @@
 
                         <configuration>
                             <excludes>
-                                <exclude>com/quorum/tessera/launcher/Main*</exclude>
+                                <exclude>com/quorum/tessera/launcher/*</exclude>
                                 <exclude>com/quorum/tessera/data/migration/Main*</exclude>
                                 <exclude>com/quorum/tessera/config/migration/Main*</exclude>
                                 <exclude>com/quorum/tessera/passwords/ConsolePasswordReader*</exclude>
                                 <exclude>com/quorum/tessera/passwords/PasswordReaderFactory*</exclude>
                                 <exclude>com/quorum/tessera/key/vault/azure/AzureKeyVaultClientDelegate*</exclude>
-                                <exclude>com/quorum/tessera/key/vault/hashicorp/KeyValueOperationsDelegateFactory*
-                                </exclude>
+                                <exclude>com/quorum/tessera/key/vault/hashicorp/KeyValueOperationsDelegateFactory*</exclude>
                                 <exclude>com/quorum/tessera/enclave/rest/Main*</exclude>
-                                <exclude>com/quorum/tessera/enclave/websockets/Main*</exclude>
+                                <exclude>com/quorum/tessera/context/RuntimeContextFactory*</exclude>
                             </excludes>
 
                             <rules>
@@ -357,9 +362,9 @@
                     </execution>
 
                 </executions>
-            </plugin>
+            </plugin> -->
 
-            <plugin>
+            <!--   <plugin>
                 <groupId>org.ec4j.maven</groupId>
                 <artifactId>editorconfig-maven-plugin</artifactId>
                 <version>0.0.10</version>
@@ -376,7 +381,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin> -->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -437,10 +442,10 @@
 
             </plugin>
 
-            <plugin>
+           <!--  <plugin>
                 <groupId>com.theoryinpractise</groupId>
                 <artifactId>googleformatter-maven-plugin</artifactId>
-                <version>1.7.3</version>
+                <version>1.7.4</version>
                 <executions>
                     <execution>
                         <id>reformat-sources</id>
@@ -463,7 +468,7 @@
                     </execution>
                 </executions>
             </plugin>
-
+ -->
         </plugins>
 
 
@@ -488,224 +493,238 @@
         <module>enclave</module>
         <module>tessera-dist</module>
         <module>tessera-partyinfo</module>
-        <module>tessera-sync</module>
         <module>test-utils</module>
         <module>tessera-jaxrs</module>
         <module>tessera-data</module>
         <module>tessera-context</module>
+        <module>service-loader-ext</module>
+        <module>tessera-recover</module>
+        <module>eclipselink-utils</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>encryption-api</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>argon2</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>config</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>cli-api</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>config-cli</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>security</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>encryption-jnacl</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
                 <scope>runtime</scope>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>encryption-kalium</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
                 <scope>runtime</scope>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>service-locator-api</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>enclave-api</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>tessera-partyinfo</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>enclave-jaxrs</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>enclave-jaxrs</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
                 <classifier>server</classifier>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>service-locator-spring</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>mock-service-locator</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>server-api</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>jersey-server</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>test-util</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
                 <scope>test</scope>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>shared</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>tessera-core</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>sync-jaxrs</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>transaction-jaxrs</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>thirdparty-jaxrs</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>key-vault-api</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>azure-key-vault</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>aws-key-vault</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>hashicorp-key-vault</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>key-generation</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>jaxrs-client</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>ddls</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>jaxrs-client-unixsocket</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>tessera-data</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>encryption-ec</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
             </dependency>
-            
-            
+
+
             <dependency>
-                <groupId>com.jpmorgan.quorum</groupId>
+                <groupId>net.consensys.quorum.tessera</groupId>
                 <artifactId>tessera-context</artifactId>
-                <version>0.10.5</version>
+                <version>1.0.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.consensys.quorum.tessera</groupId>
+                <artifactId>eclipselink-utils</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.consensys.quorum.tessera</groupId>
+                <artifactId>tessera-recover</artifactId>
+                <version>1.0.0</version>
             </dependency>
 
             <dependency>
@@ -726,7 +745,14 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>4.13.1</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-core</artifactId>
+                <version>2.1</version>
                 <scope>test</scope>
             </dependency>
 
@@ -740,7 +766,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>2.23.0</version>
+                <version>3.4.4</version>
                 <scope>test</scope>
             </dependency>
 
@@ -826,7 +852,6 @@
                 <groupId>com.zaxxer</groupId>
                 <artifactId>HikariCP</artifactId>
                 <version>3.2.0</version>
-                <scope>runtime</scope>
             </dependency>
 
             <dependency>
@@ -984,7 +1009,7 @@
             <dependency>
                 <groupId>org.cryptacular</groupId>
                 <artifactId>cryptacular</artifactId>
-                <version>1.2.2</version>
+                <version>1.2.4</version>
             </dependency>
 
             <dependency>
@@ -1020,7 +1045,7 @@
             <dependency>
                 <groupId>nl.jqno.equalsverifier</groupId>
                 <artifactId>equalsverifier</artifactId>
-                <version>3.1.5</version>
+                <version>3.4.1</version>
             </dependency>
 
             <dependency>
@@ -1080,19 +1105,6 @@
                 <groupId>com.github.jnr</groupId>
                 <artifactId>jnr-unixsocket</artifactId>
                 <version>0.28</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.jetty.websocket</groupId>
-                <artifactId>javax-websocket-server-impl</artifactId>
-                <version>${jetty.version}</version>
-                <type>jar</type>
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.jetty.websocket</groupId>
-                <artifactId>javax-websocket-client-impl</artifactId>
-                <version>${jetty.version}</version>
             </dependency>
 
             <dependency>
@@ -1156,6 +1168,12 @@
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-keyvault</artifactId>
                 <version>1.2.2</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.squareup.retrofit2</groupId>
+                        <artifactId>retrofit</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -1236,7 +1254,11 @@
                 <version>${awssdk.version}</version>
             </dependency>
 
-
+            <dependency>
+                <groupId>com.squareup.retrofit2</groupId>
+                <artifactId>adapter-rxjava</artifactId>
+                <version>2.5.0</version>
+            </dependency>
 
             <!-- to address dependency convergence between com.github.tomakehurst:wiremock-jre8 and software.amazon.awssdk:secretsmanager -->
             <dependency>
@@ -1280,6 +1302,13 @@
             <groupId>com.github.stefanbirkner</groupId>
             <artifactId>system-rules</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <!-- to resolve azure key vault dependency convergence -->
+        <dependency>
+            <groupId>com.squareup.retrofit2</groupId>
+            <artifactId>retrofit</artifactId>
+            <version>2.5.0</version>
         </dependency>
 
         <dependency>
@@ -1351,7 +1380,7 @@
                 <version>3.0.0</version>
                 <configuration>
                     <reportSets>
-                        <reportSet>
+                        <EnclaveImplreportSet>
                             <reports>
                                 <report>dependencies</report>
                                 <report>scm</report>
@@ -1359,7 +1388,7 @@
                                 <report>surefire</report>
                                 <report>modules</report>
                             </reports>
-                        </reportSet>
+                        </EnclaveImplreportSet>
                     </reportSets>
                 </configuration>
 
@@ -1409,7 +1438,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.2</version>
+                <version>0.8.5</version>
 
                 <reportSets>
                     <reportSet>
@@ -1641,7 +1670,7 @@
         <site>
             <id>tessera-github-pages</id>
             <name>Quorum GitHub Pages</name>
-            <url>git:gh-pages://git@github.com:jpmorganchase/tessera.git</url>
+            <url>git:gh-pages://git@github.com:ConsenSys/tessera.git</url>
         </site>
 
         <snapshotRepository>

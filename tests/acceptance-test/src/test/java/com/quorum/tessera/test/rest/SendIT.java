@@ -1,21 +1,22 @@
 package com.quorum.tessera.test.rest;
 
-import com.quorum.tessera.api.model.ReceiveResponse;
-import com.quorum.tessera.api.model.SendRequest;
-import com.quorum.tessera.api.model.SendResponse;
+import com.quorum.tessera.api.ReceiveResponse;
+import com.quorum.tessera.api.SendRequest;
+import com.quorum.tessera.api.SendResponse;
 import com.quorum.tessera.test.Party;
+import com.quorum.tessera.test.PartyHelper;
 import org.junit.Test;
+import suite.ExecutionContext;
 
+import javax.json.Json;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import javax.json.Json;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import com.quorum.tessera.test.PartyHelper;
-import suite.ExecutionContext;
 import static transaction.utils.Utils.generateValidButUnknownPublicKey;
 
 /**
@@ -69,7 +70,9 @@ public class SendIT {
 
         ReceiveResponse receiveResponse = checkPersistedTxnResponse.readEntity(ReceiveResponse.class);
 
-        assertThat(receiveResponse.getPayload()).isEqualTo(transactionData);
+        assertThat(receiveResponse.getPayload())
+                .describedAs("The response payload should be equal to the sent txn data")
+                .isEqualTo(transactionData);
 
         utils.findTransaction(result.getKey(), partyHelper.findByAlias("A"), partyHelper.findByAlias("B"))
                 .forEach(

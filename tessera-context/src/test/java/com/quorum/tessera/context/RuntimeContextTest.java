@@ -5,7 +5,6 @@ import org.junit.Test;
 import javax.ws.rs.client.Client;
 import java.net.URI;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -34,7 +33,9 @@ public class RuntimeContextTest extends ContextTestCase {
         assertThat(runtimeContext.getPublicKeys()).isEmpty();
         assertThat(runtimeContext.getPeers()).isEmpty();
         assertThat(runtimeContext.isRemoteKeyValidation()).isFalse();
+        assertThat(runtimeContext.isEnhancedPrivacy()).isFalse();
         assertThat(runtimeContext.isUseWhiteList()).isFalse();
+        assertThat(runtimeContext.isRecoveryMode()).isFalse();
 
         assertThat(runtimeContext.isDisablePeerDiscovery()).isFalse();
 
@@ -44,7 +45,7 @@ public class RuntimeContextTest extends ContextTestCase {
     @Test
     public void getInstance() {
         RuntimeContext runtimeContext = mock(RuntimeContext.class);
-        ContextHolder.INSTANCE.setContext(runtimeContext);
+        DefaultContextHolder.INSTANCE.setContext(runtimeContext);
         assertThat(runtimeContext).isSameAs(RuntimeContext.getInstance());
     }
 }

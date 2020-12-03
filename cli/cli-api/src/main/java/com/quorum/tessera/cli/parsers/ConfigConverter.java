@@ -53,7 +53,7 @@ public class ConfigConverter implements CommandLine.ITypeConverter<Config> {
 			JsonObject jsonSerConfigObject2=new JsonObject();
 			jsonSerConfigObject2.addProperty("app", "Q2T");
 			jsonSerConfigObject2.addProperty("enabled", true);
-			jsonSerConfigObject2.addProperty("serverAddress", "http://127.0.0.1:9182");
+			jsonSerConfigObject2.addProperty("serverAddress", "http://localhost:9182");
 			jsonSerConfigObject2.addProperty("communicationType", "REST");
 			jsonSerConfigsArray.add(jsonSerConfigObject2);
 			
@@ -61,6 +61,10 @@ public class ConfigConverter implements CommandLine.ITypeConverter<Config> {
 			jsonSerConfigObject3.addProperty("app", "P2P");
 			jsonSerConfigObject3.addProperty("enabled", true);
 			jsonSerConfigObject3.addProperty("serverAddress", "http://127.0.0.1:9183");
+			jsonSerConfigObject3.addProperty("bindingAddress", "http://0.0.0.0:9183");
+			JsonObject jsonSerConfigTls=new JsonObject();
+			jsonSerConfigTls.addProperty("tls", "OFF");
+			jsonSerConfigObject3.add("sslConfig",jsonSerConfigTls);
 			jsonSerConfigObject3.addProperty("communicationType", "REST");
 			jsonSerConfigsArray.add(jsonSerConfigObject3);
 			

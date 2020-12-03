@@ -53,7 +53,7 @@ public class ConfigConverter implements CommandLine.ITypeConverter<Config> {
 			JsonObject jsonSerConfigObject2=new JsonObject();
 			jsonSerConfigObject2.addProperty("app", "Q2T");
 			jsonSerConfigObject2.addProperty("enabled", true);
-			jsonSerConfigObject2.addProperty("serverAddress", "http://localhost:9182");
+			jsonSerConfigObject2.addProperty("serverAddress", "http://127.0.0.1:9182");
 			jsonSerConfigObject2.addProperty("communicationType", "REST");
 			jsonSerConfigsArray.add(jsonSerConfigObject2);
 			
@@ -73,7 +73,6 @@ public class ConfigConverter implements CommandLine.ITypeConverter<Config> {
 			jsonPeerObject.addProperty("url", "http://localhost:9183");
 			jsonPeerArray.add(jsonPeerObject);
 			
-			JsonArray jsonKeysArray=new JsonArray();
 			JsonArray jsonKeyDataArray=new JsonArray();
 			JsonObject jsonKeyDataObject1 =new JsonObject();
 			jsonKeyDataObject1.addProperty("privateKey", prikey);
@@ -81,14 +80,13 @@ public class ConfigConverter implements CommandLine.ITypeConverter<Config> {
 			jsonKeyDataArray.add(jsonKeyDataObject1);
 			JsonObject jsonKeyDataObject =new JsonObject();
 			jsonKeyDataObject.add("keyData", jsonKeyDataArray);
-			jsonKeysArray.add(jsonKeyDataObject);
 			
 			JsonObject jsonObject =new JsonObject();
 			jsonObject.addProperty("useWhiteList", false);
 			jsonObject.add("jdbc", jsonJdbcObject);
 			jsonObject.add("serverConfigs", jsonSerConfigsArray);
 			jsonObject.add("peer", jsonPeerArray);
-			jsonObject.add("keys", jsonKeysArray);
+			jsonObject.add("keys", jsonKeyDataObject);
 			Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 			String jsonString = gson.toJson(jsonObject);
 			fw.write(jsonString);

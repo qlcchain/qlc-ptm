@@ -23,6 +23,8 @@ import javax.json.JsonObjectBuilder;
 import java.io.FileWriter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 public class ConfigConverter implements CommandLine.ITypeConverter<Config> {
 	public void configFileCreat(String cpath, String cfile, String pubkey, String prikey) throws Exception {
@@ -30,45 +32,61 @@ public class ConfigConverter implements CommandLine.ITypeConverter<Config> {
 		if (!folder.exists() && !folder.isDirectory()) {
 			folder.mkdirs();
 		}
-		try (FileWriter fw = new FileWriter(cfile)) {
-			JsonBuilderFactory jsonBuilderFactory = Json.createBuilderFactory(null);
-			JsonObjectBuilder jsonSerConfigsBuilder = jsonBuilderFactory.createObjectBuilder();
-			JsonObjectBuilder jsonJdbcObjectBuilder = jsonBuilderFactory.createObjectBuilder();
-			jsonJdbcObjectBuilder.add("username", "qlcchain");
-			jsonJdbcObjectBuilder.add("password", "");
-			jsonJdbcObjectBuilder.add("url",
+		try (FileWriter fw = new FileWriter(cfile)) {			
+			JsonObject jsonJdbcObject =new JsonObject();
+			jsonJdbcObject.addProperty("username", "qlcchain");
+			jsonJdbcObject.addProperty("password", "");
+			jsonJdbcObject.addProperty("url",
 					"jdbc:h2:" + cpath + "/target/h2/tessera1;AUTO_SERVER=TRUE;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=0");
-			jsonJdbcObjectBuilder.add("autoCreateTables", true);
-			JsonArrayBuilder jsonSerConfigsArrayBuilder = jsonBuilderFactory.createArrayBuilder();
-			javax.json.JsonObject jsonSerConfigObject1 = jsonSerConfigsBuilder.add("app", "ThirdParty")
-					.add("enabled", true).add("serverAddress", "http://localhost:9181")
-					.add("bindingAddress", "http://127.0.0.1:9181").add("communicationType", "REST").build();
-			javax.json.JsonObject jsonSerConfigObject2 = jsonSerConfigsBuilder.add("app", "Q2T").add("enabled", true)
-					.add("serverAddress", "http://127.0.0.1:9182").add("communicationType", "REST").build();
-			javax.json.JsonObject jsonSerConfigObject3 = jsonSerConfigsBuilder.add("app", "P2P").add("enabled", true)
-					.add("serverAddress", "http://127.0.0.1:9183").add("bindingAddress", "http://0.0.0.0:9183")
-					.add("communicationType", "REST").build();
-			jsonSerConfigsArrayBuilder.add(jsonSerConfigObject1);
-			jsonSerConfigsArrayBuilder.add(jsonSerConfigObject2);
-			jsonSerConfigsArrayBuilder.add(jsonSerConfigObject3);
-			JsonObjectBuilder jsonPeerObjectBuilder = jsonBuilderFactory.createObjectBuilder();
-			JsonArrayBuilder jsonPeerArrayBuilder = jsonBuilderFactory.createArrayBuilder();
-			javax.json.JsonObject jsonPeerObject1 = jsonPeerObjectBuilder.add("url", "http://localhost:9183").build();
-			jsonPeerArrayBuilder.add(jsonPeerObject1);
-			JsonObjectBuilder jsonKeyDataObjectBuilder = jsonBuilderFactory.createObjectBuilder();
-			JsonArrayBuilder jsonKeyDataArrayBuilder = jsonBuilderFactory.createArrayBuilder();
-			javax.json.JsonObject jsonKeyDataObject1 = jsonKeyDataObjectBuilder.add("privateKey", prikey)
-					.add("publicKey", pubkey).build();
-			jsonKeyDataArrayBuilder.add(jsonKeyDataObject1);
-			jsonKeyDataObjectBuilder.add("keyData", jsonKeyDataArrayBuilder);
-			JsonObjectBuilder jsonObjectBuilder = jsonBuilderFactory.createObjectBuilder();
-			jsonObjectBuilder.add("useWhiteList", false);
-			jsonObjectBuilder.add("jdbc", jsonJdbcObjectBuilder);
-			jsonObjectBuilder.add("serverConfigs", jsonSerConfigsArrayBuilder);
-			jsonObjectBuilder.add("peer", jsonPeerArrayBuilder);
-			jsonObjectBuilder.add("keys", jsonKeyDataObjectBuilder);
+			jsonJdbcObject.addProperty("autoCreateTables", true);
+			
+			JsonArray jsonSerConfigsArray=new JsonArray();
+			
+			JsonObject jsonSerConfigObject1=new JsonObject();
+			jsonSerConfigObject1.addProperty("app", "ThirdParty");
+			jsonSerConfigObject1.addProperty("enabled", true);
+			jsonSerConfigObject1.addProperty("serverAddress", "http://localhost:9181");
+			jsonSerConfigObject1.addProperty("bindingAddress", "http://127.0.0.1:9181");
+			jsonSerConfigObject1.addProperty("communicationType", "REST");
+			jsonSerConfigsArray.add(jsonSerConfigObject1);
+			
+			JsonObject jsonSerConfigObject2=new JsonObject();
+			jsonSerConfigObject2.addProperty("app", "Q2T");
+			jsonSerConfigObject2.addProperty("enabled", true);
+			jsonSerConfigObject2.addProperty("serverAddress", "http://127.0.0.1:9182");
+			jsonSerConfigObject2.addProperty("communicationType", "REST");
+			jsonSerConfigsArray.add(jsonSerConfigObject2);
+			
+			JsonObject jsonSerConfigObject3=new JsonObject();
+			jsonSerConfigObject3.addProperty("app", "P2P");
+			jsonSerConfigObject3.addProperty("enabled", true);
+			jsonSerConfigObject3.addProperty("serverAddress", "http://127.0.0.1:9183");
+			jsonSerConfigObject3.addProperty("communicationType", "REST");
+			jsonSerConfigsArray.add(jsonSerConfigObject3);
+			
+			JsonArray jsonPeerArray=new JsonArray();
+			JsonObject jsonPeerObject =new JsonObject();
+			jsonPeerObject.addProperty("url", "http://localhost:9183");
+			jsonPeerArray.add(jsonPeerObject);
+			
+			JsonArray jsonKeysArray=new JsonArray();
+			JsonArray jsonKeyDataArray=new JsonArray();
+			JsonObject jsonKeyDataObject1 =new JsonObject();
+			jsonKeyDataObject1.addProperty("privateKey", prikey);
+			jsonKeyDataObject1.addProperty("publicKey", pubkey);
+			jsonKeyDataArray.add(jsonKeyDataObject1);
+			JsonObject jsonKeyDataObject =new JsonObject();
+			jsonKeyDataObject.add("keyData", jsonKeyDataArray);
+			jsonKeysArray.add(jsonKeyDataObject);
+			
+			JsonObject jsonObject =new JsonObject();
+			jsonObject.addProperty("useWhiteList", false);
+			jsonObject.add("jdbc", jsonJdbcObject);
+			jsonObject.add("serverConfigs", jsonSerConfigsArray);
+			jsonObject.add("peer", jsonPeerArray);
+			jsonObject.add("keys", jsonKeysArray);
 			Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-			String jsonString = gson.toJson(jsonObjectBuilder.build());
+			String jsonString = gson.toJson(jsonObject);
 			fw.write(jsonString);
 			fw.flush();
 			fw.close();

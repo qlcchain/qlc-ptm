@@ -1,0 +1,45 @@
+version: "3.5"
+
+services:
+  ptm:
+    image: qlcchain/ptm:1.0.0
+    container_name: ptm
+    entrypoint: java -cp /usr/share/java/postgresql-jdbc.jar:/tessera/tessera-app.jar:. com.quorum.tessera.launcher.Main -configfile /ptm/config.json
+    networks:
+      - qlcchain-test
+    restart: unless-stopped
+    volumes:
+      - ./ptm:/ptm
+    ports:
+      - "9183:9183"
+      - "9182:9182"
+    depends_on:
+      - db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10M"
+        max-file: "10"
+    #labels:
+      # PTM http/https
+
+  db:
+    image: postgres:alpine
+    container_name: postgres
+    env_file: db.env
+    networks:
+      - qlcchain-test
+    restart: unless-stopped
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10M"
+        max-file: "10"
+
+networks:
+  qlcchain-test:
+    name: qlcchain-test

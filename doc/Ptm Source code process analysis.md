@@ -51,15 +51,15 @@ a. 首先通过cli从配置文件config.json读取配置，根据配置创建运
 b. 再将当前partyInfo保存到集合中(内存)
 c. 根据的serverConfigs循环创建ThirdPartyRestApp、P2PRestApp、Q2TRestApp(未包含EnclaveApplication)Restful服务
 d 启动服务监听
-![å¨è¿éæå¥å¾çæè¿°](https://img-blog.csdnimg.cn/20200328235721310.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2trMzkwOQ==,size_16,color_FFFFFF,t_70)
+![](https://img-blog.csdnimg.cn/20200328235721310.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2trMzkwOQ==,size_16,color_FFFFFF,t_70)
 
 ## 4交易流程
 
-a.收到交易请求后，将请求交给TransactionManager处理，TransactionManager调用Enclave加密tx(详见下一个流程【加密交易】)，根据加密的payload，调用MessageHashFactory生成tx Hash，
+a.收到交易请求后，将请求交给TransactionManager处理，TransactionManager调用Enclave加密tx(详见【加密交易】)，根据加密的payload，调用MessageHashFactory生成tx Hash，
 b. 调用DAO将数据保存到数据库
-c. 循环接收者列表，将加密了的playload推送给其他Tessera节点处理
-d.将tx hash使用base64编码后返回给quorum几点
-![å¨è¿éæå¥å¾çæè¿°](https://img-blog.csdnimg.cn/20200329131900327.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2trMzkwOQ==,size_16,color_FFFFFF,t_70)
+c. 循环接收者列表，将加密了的playload推送给其他ptm节点处理
+d.将tx hash使用base64编码后返回给qlc节点
+![](https://img-blog.csdnimg.cn/20200329131900327.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2trMzkwOQ==,size_16,color_FFFFFF,t_70)
 
 ## 5加密交易
 
@@ -68,4 +68,54 @@ b.使用步骤a的随机数Nonce和RMK加密message(Transaction Payload)。
 c. 根据发送者的公钥从keymanager中获取发送者私钥
 d.遍历接收者列表：根据发送者的私钥和接收者的公钥生成共享秘钥，根据共享密钥和接收者随机数加密RMK，最后返回RMK列表
 e.返回加密的playload、随机数、RMKs给Transaction Manager
-![å¨è¿éæå¥å¾çæè¿°](https://img-blog.csdnimg.cn/20200329141827544.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2trMzkwOQ==,size_16,color_FFFFFF,t_70)
+![](https://img-blog.csdnimg.cn/20200329141827544.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2trMzkwOQ==,size_16,color_FFFFFF,t_70)
+
+## 6.SendRaw处理流程
+
+ptm隐私交易入口sendRaw
+
+![qlc_ptm_sendRaw](.\qlc_ptm_sendRaw.png)
+
+## 7.性能优化思路
+
+### 7.1当前性能瓶颈分析
+
+cpu消耗打点数据
+
+### 1.send接口中computeShareKey处理
+
+![image-20201211101434783](.\image-20201211101434783.png)
+
+这个是在处理隐私数据时，遍历recipers，根据sender的prikey和对端的pubkey计算出一个sharedKey，然后用sharedKey加密数据
+
+目前看是在计算sharedKey的时候最消耗cpu
+
+### 2.数据库处理中getConnection损耗
+
+![image-20201211101609823](.\image-20201211101609823.png)
+
+### 7.2性能优化思路
+
+#### sharedKey计算处理增加缓存
+
+实际场景中，联盟中可能就几个ptm节点，对应着sender和recipers的密钥对有限，不用每一次都重新计算sharedKey
+
+可以根据预设配置，每一对sender_priKey+reciper_pubKey,每N次才重新计算一次shareKey
+
+在测试环境47.103.54.171上（4核*2.5G CPU，8G mem）
+
+优化前，单独打ptm节点性能大约在300左右，cpu被吃满
+
+| Type | Name       | # requests | # failures | Median response time | Average response time | Min response time | Max response time | Average Content Size | Requests/s | Requests Failed/s |
+| ---- | ---------- | ---------- | ---------- | -------------------- | --------------------- | ----------------- | ----------------- | -------------------- | ---------- | ----------------- |
+| POST | /send      | 10623      | 0          | 4400                 | 4398                  | 15                | 11181             | 98                   | 300.6      | 0                 |
+| None | Aggregated | 10623      | 0          | 4400                 | 4398                  | 15                | 11181             | 98                   | 300.6      |                   |
+
+增加了一个全局sharedKey CacheMap之后
+
+单独打ptm节点性能用jprofile查看单独ptm节点性能翻番，这个时候ptm还没有到cpu的峰值
+
+| Type | Name       | # requests | # failures | Median response time | Average response time | Min response time | Max response time | Average Content Size | Requests/s |
+| ---- | ---------- | ---------- | ---------- | -------------------- | --------------------- | ----------------- | ----------------- | -------------------- | ---------- |
+| POST | /send      | 64815      | 2          | 3600                 | 3800                  | 9                 | 46762             | 97                   | 497.02     |
+| None | Aggregated | 64815      | 2          | 3600                 | 3800                  | 9                 | 46762             | 97                   | 497.02     |

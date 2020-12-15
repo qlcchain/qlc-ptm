@@ -3,15 +3,15 @@ package com.quorum.tessera.encryption;
 import java.util.Objects;
 
 public class KeyCache {
-	public String SenderKey;
-	public String ReciperKey;
-	public SharedKey SharedKey;
-	public int UsedCount;
+	public String senderKey;
+	public String reciperKey;
+	public SharedKey sharedKey;
+	public int usedCount;
 
-	public KeyCache(String SenderKey, String ReciperKey, SharedKey SharedKey) {
-		this.SenderKey = SenderKey;
-		this.ReciperKey = ReciperKey;
-		this.UsedCount = 0;
-		this.SharedKey = SharedKey;
+	public KeyCache(String senderKey, String reciperKey, SharedKey sharedKey) {
+		this.senderKey = senderKey;
+		this.reciperKey = reciperKey;
+		this.usedCount = 0;
+		this.sharedKey = sharedKey;
 	}
 }

@@ -23,7 +23,7 @@ public interface Encryptor {
      * @return The shared key for this key pair.
      */
     SharedKey computeSharedKey(PublicKey publicKey, PrivateKey privateKey);
-    SharedKey computeSharedKeyWithCache(PublicKey publicKey, PrivateKey privateKey);
+    
     /**
      * Encrypt a payload directly using the given public/private key pair for the sender/recipient
      *

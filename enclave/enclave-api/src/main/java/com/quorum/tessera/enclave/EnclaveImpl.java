@@ -192,13 +192,11 @@ public class EnclaveImpl implements Enclave {
         final PrivateKey privateKey = keyManager.getPrivateKeyForPublicKey(senderPublicKey);
 
         return recipientPublicKeys.stream()
-        		//replace with cache by willcao
-                //.map(publicKey -> encryptor.computeSharedKey(publicKey, privateKey))
-                .map(publicKey -> encryptor.computeSharedKeyWithCache(publicKey, privateKey))
+                .map(publicKey -> encryptor.computeSharedKey(publicKey, privateKey))
                 .map(sharedKey -> encryptor.sealAfterPrecomputation(masterKey.getKeyBytes(), recipientNonce, sharedKey))
                 .collect(Collectors.toList());
     }
-
+    
     @Override
     public RawTransaction encryptRawPayload(byte[] message, PublicKey sender) {
         final MasterKey masterKey = encryptor.createMasterKey();

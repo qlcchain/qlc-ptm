@@ -46,7 +46,8 @@ public interface EnclaveFactory {
         Enclave enclave = new EnclaveImpl(encryptor, new KeyManagerImpl(keys, forwardKeys));
 
         LoggerFactory.getLogger(EnclaveFactory.class).debug("Created enclave {}", enclave);
-
+        KeyCacheImpl.cacheEnableSet(true);
+        LoggerFactory.getLogger(EnclaveFactory.class).info("cacheEnable Set true");
         return enclave;
     }
 

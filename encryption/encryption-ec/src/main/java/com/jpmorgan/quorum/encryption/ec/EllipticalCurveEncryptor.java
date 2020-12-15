@@ -88,18 +88,6 @@ public class EllipticalCurveEncryptor implements Encryptor {
     }
     
     @Override
-    public SharedKey computeSharedKeyWithCache(PublicKey publicKey, PrivateKey privateKey) {
-		SharedKey getSharedKey = KeyCacheImpl.KeyCacheSearch(publicKey.encodeToBase64(), privateKey.encodeToBase64());
-		if (getSharedKey != null) {
-			LOGGER.debug("get cache shareKeyCache{} and sharedKey {}", getSharedKey, getSharedKey.encodeToBase64());
-			return getSharedKey;
-		}
-		final SharedKey sharedKey = computeSharedKey(publicKey,privateKey);
-		KeyCacheImpl.KeyCacheUpdate(publicKey.encodeToBase64(), privateKey.encodeToBase64(), sharedKey);
-		return sharedKey;
-    }
-    
-    @Override
     public byte[] seal(byte[] message, Nonce nonce, PublicKey publicKey, PrivateKey privateKey) {
         throw new UnsupportedOperationException();
     }

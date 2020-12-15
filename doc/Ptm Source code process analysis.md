@@ -74,7 +74,7 @@ e.返回加密的playload、随机数、RMKs给Transaction Manager
 
 ptm隐私交易入口sendRaw
 
-![qlc_ptm_sendRaw](.\qlc_ptm_sendRaw.png)
+![qlc_ptm_sendRaw](http://github.com/qlcchain/qlc-ptm/raw/master/doc/qlc_ptm_sendRaw.png)
 
 ## 7.性能优化思路
 
@@ -84,7 +84,7 @@ cpu消耗打点数据
 
 ### 1.send接口中computeShareKey处理
 
-![image-20201211101434783](.\image-20201211101434783.png)
+![image](http://github.com/qlcchain/qlc-ptm/raw/master/doc/image-20201211101434783.png)
 
 这个是在处理隐私数据时，遍历recipers，根据sender的prikey和对端的pubkey计算出一个sharedKey，然后用sharedKey加密数据
 
@@ -92,7 +92,7 @@ cpu消耗打点数据
 
 ### 2.数据库处理中getConnection损耗
 
-![image-20201211101609823](.\image-20201211101609823.png)
+![image](http://github.com/qlcchain/qlc-ptm/raw/master/doc/image-20201211101609823.png)
 
 ### 7.2性能优化思路
 
@@ -117,5 +117,5 @@ cpu消耗打点数据
 
 | Type | Name       | # requests | # failures | Median response time | Average response time | Min response time | Max response time | Average Content Size | Requests/s |
 | ---- | ---------- | ---------- | ---------- | -------------------- | --------------------- | ----------------- | ----------------- | -------------------- | ---------- |
-| POST | /send      | 64815      | 2          | 3600                 | 3800                  | 9                 | 46762             | 97                   | 497.02     |
-| None | Aggregated | 64815      | 2          | 3600                 | 3800                  | 9                 | 46762             | 97                   | 497.02     |
+| POST | /send      | 70267      | 0          | 1200                 | 1351                  | 6                 | 51920             | 98                   | 557.24     |
+| None | Aggregated | 70267      | 0          | 1200                 | 1351                  | 6                 | 51920             | 98                   | 557.24     |

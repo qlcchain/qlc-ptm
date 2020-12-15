@@ -7,6 +7,7 @@ import com.quorum.tessera.encryption.SharedKey;
 import com.quorum.tessera.encryption.Encryptor;
 import com.quorum.tessera.encryption.EncryptorException;
 import com.quorum.tessera.encryption.Nonce;
+import com.quorum.tessera.encryption.KeyCacheImpl;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +86,19 @@ public class EllipticalCurveEncryptor implements Encryptor {
             throw new EncryptorException("unable to generate shared secret");
         }
     }
-
+    
+    @Override
+    public SharedKey computeSharedKeyWithCache(PublicKey publicKey, PrivateKey privateKey) {
+		SharedKey getSharedKey = KeyCacheImpl.KeyCacheSearch(publicKey.encodeToBase64(), privateKey.encodeToBase64());
+		if (getSharedKey != null) {
+			LOGGER.debug("get cache shareKeyCache{} and sharedKey {}", getSharedKey, getSharedKey.encodeToBase64());
+			return getSharedKey;
+		}
+		final SharedKey sharedKey = computeSharedKey(publicKey,privateKey);
+		KeyCacheImpl.KeyCacheUpdate(publicKey.encodeToBase64(), privateKey.encodeToBase64(), sharedKey);
+		return sharedKey;
+    }
+    
     @Override
     public byte[] seal(byte[] message, Nonce nonce, PublicKey publicKey, PrivateKey privateKey) {
         throw new UnsupportedOperationException();

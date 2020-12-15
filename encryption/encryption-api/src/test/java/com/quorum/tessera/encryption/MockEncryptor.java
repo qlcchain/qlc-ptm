@@ -25,6 +25,11 @@ public enum MockEncryptor implements Encryptor {
     }
 
     @Override
+    public SharedKey computeSharedKeyWithCache(PublicKey publicKey, PrivateKey privateKey) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    @Override
     public byte[] seal(byte[] message, Nonce nonce, PublicKey publicKey, PrivateKey privateKey) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

@@ -192,7 +192,9 @@ public class EnclaveImpl implements Enclave {
         final PrivateKey privateKey = keyManager.getPrivateKeyForPublicKey(senderPublicKey);
 
         return recipientPublicKeys.stream()
-                .map(publicKey -> encryptor.computeSharedKey(publicKey, privateKey))
+        		//replace with cache by willcao
+                //.map(publicKey -> encryptor.computeSharedKey(publicKey, privateKey))
+                .map(publicKey -> encryptor.computeSharedKeyWithCache(publicKey, privateKey))
                 .map(sharedKey -> encryptor.sealAfterPrecomputation(masterKey.getKeyBytes(), recipientNonce, sharedKey))
                 .collect(Collectors.toList());
     }

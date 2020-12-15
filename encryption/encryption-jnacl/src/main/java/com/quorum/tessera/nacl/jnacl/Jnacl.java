@@ -26,14 +26,6 @@ public class Jnacl implements Encryptor {
 
 	@Override
 	public SharedKey computeSharedKey(final PublicKey publicKey, final PrivateKey privateKey) {
-		// LOGGER.info("Computing the shared key for public key {} and private key {}",
-		// publicKey, privateKey);
-		SharedKey getSharedKey = KeyCacheImpl.KeyCacheSearch(publicKey.encodeToBase64(), privateKey.encodeToBase64());
-		if (getSharedKey != null) {
-			LOGGER.debug("get cache shareKeyCache{} and sharedKey {}", getSharedKey, getSharedKey.encodeToBase64());
-			return getSharedKey;
-		}
-
 		final byte[] precomputed = new byte[crypto_secretbox_BEFORENMBYTES];
 
 		final int jnaclResult = secretBox.cryptoBoxBeforenm(precomputed, publicKey.getKeyBytes(),
@@ -48,10 +40,22 @@ public class Jnacl implements Encryptor {
 
 		LOGGER.debug("Computed shared key {} for pub {} and priv {},precomputed{}", sharedKey.encodeToBase64(),
 				publicKey, privateKey.encodeToBase64(), precomputed);
-		KeyCacheImpl.KeyCacheUpdate(publicKey.encodeToBase64(), privateKey.encodeToBase64(), sharedKey);
 		return sharedKey;
 	}
 
+	@Override
+	public SharedKey computeSharedKeyWithCache(final PublicKey publicKey, final PrivateKey privateKey) {
+		// LOGGER.info("Computing the shared key for public key {} and private key {}",
+		// publicKey, privateKey);
+		SharedKey getSharedKey = KeyCacheImpl.KeyCacheSearch(publicKey.encodeToBase64(), privateKey.encodeToBase64());
+		if (getSharedKey != null) {
+			LOGGER.debug("get cache shareKeyCache{} and sharedKey {}", getSharedKey, getSharedKey.encodeToBase64());
+			return getSharedKey;
+		}
+		final SharedKey sharedKey = computeSharedKey(publicKey,privateKey);
+		KeyCacheImpl.KeyCacheUpdate(publicKey.encodeToBase64(), privateKey.encodeToBase64(), sharedKey);
+		return sharedKey;
+	}
 	@Override
 	public byte[] seal(final byte[] message, final Nonce nonce, final PublicKey publicKey,
 			final PrivateKey privateKey) {

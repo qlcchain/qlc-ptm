@@ -21,5 +21,7 @@ RUN apk add java-postgresql-jdbc=42.2.10-r0 --no-cache
 
 COPY --from=builder /tessera/tessera-dist/tessera-app/target/*-app.jar /tessera/tessera-app.jar
 COPY ./ptm-start.sh /tessera/ptm-start.sh
+RUN chown nobody:nogroup /tessera/ptm-start.sh
+RUN chmod 755 /tessera/ptm-start.sh
 
 ENTRYPOINT ["/tessera/ptm-start.sh"]

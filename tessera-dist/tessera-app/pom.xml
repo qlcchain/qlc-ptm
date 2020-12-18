@@ -97,7 +97,17 @@
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
         </dependency>
-
+        
+			<dependency>
+				<groupId>com.alibaba.hologres</groupId>
+				<artifactId>postgresql</artifactId>
+			</dependency>
+			
+			<dependency>
+		      <groupId>mysql</groupId>
+		      <artifactId>mysql-connector-java</artifactId>
+		    </dependency>
+		    
         <dependency>
             <groupId>net.consensys.quorum.tessera</groupId>
             <artifactId>jersey-server</artifactId>

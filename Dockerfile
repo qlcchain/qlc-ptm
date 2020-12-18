@@ -17,11 +17,7 @@ RUN apk add libtasn1=4.16.0-r1 --update-cache --repository http://dl-cdn.alpinel
 RUN apk add libpng=1.6.37-r1 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main/ --allow-untrusted
 RUN apk add giflib=5.2.1-r0 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main/ --allow-untrusted
 RUN apk add libjpeg-turbo=2.0.5-r0 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main/ --allow-untrusted
-RUN apk add java-postgresql-jdbc=42.2.10-r0 --no-cache
 
 COPY --from=builder /tessera/tessera-dist/tessera-app/target/*-app.jar /tessera/tessera-app.jar
-COPY ./ptm-start.sh /tessera/ptm-start.sh
-RUN chown nobody:nogroup /tessera/ptm-start.sh
-RUN chmod 755 /tessera/ptm-start.sh
 
-ENTRYPOINT ["/tessera/ptm-start.sh"]
+ENTRYPOINT ["java", "-jar", "/tessera/tessera-app.jar"]

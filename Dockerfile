@@ -20,4 +20,4 @@ RUN apk add libjpeg-turbo=2.0.5-r0 --update-cache --repository http://dl-cdn.alp
 
 COPY --from=builder /tessera/tessera-dist/tessera-app/target/*-app.jar /tessera/tessera-app.jar
 
-ENTRYPOINT ["java", "-jar", "/tessera/tessera-app.jar"]
+ENTRYPOINT ["java", "-jar", "/tessera/tessera-app.jar", "-configfile", "/ptm/config.json"]

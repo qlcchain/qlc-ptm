@@ -22,7 +22,7 @@
 ├── tessera-dist 系统launcher入口,包含tessera-spring.xml配置文件
 ├── tessera-jaxrs 系统RESTful API(OpenAPI)定义
 ├── tessera-partyinfo 参与者之间的服务发现、p2p连接、推送EncodedPayload到其他节点
-├── tessera-sync peer节点之间Transaction的同步
+├── tessera-recover recover and resend
 ├── test-utils 测试mock工具
 └── tests 测试用例
 
@@ -76,13 +76,237 @@ ptm隐私交易入口sendRaw
 
 ![qlc_ptm_sendRaw](http://github.com/qlcchain/qlc-ptm/raw/master/doc/qlc_ptm_sendRaw.png)
 
-## 7.性能优化思路
+## 7.ptm 节点发现同步流程
 
-### 7.1当前性能瓶颈分析
+### 7.1 tessera-partyinfo 
+
+参与者之间的服务发现、p2p连接、推送EncodedPayload到其他节点，对应目录结构
+
+```
+├── discovery
+│   ├── ActiveNode.java
+│   ├── AutoDiscovery.java
+│   ├── DefaultNetworkStore.java
+│   ├── DisabledAutoDiscovery.java
+│   ├── DiscoveryFactory.java
+│   ├── DiscoveryHelperFactory.java
+│   ├── DiscoveryHelperImpl.java
+│   ├── DiscoveryHelper.java
+│   ├── Discovery.java
+│   ├── EnclaveKeySynchroniserFactory.java
+│   ├── EnclaveKeySynchroniserImpl.java
+│   ├── EnclaveKeySynchroniser.java
+│   ├── NetworkStoreFactory.java
+│   ├── NetworkStore.java
+│   └── NodeUri.java
+└── partyinfo
+    ├── AutoDiscoveryDisabledException.java
+    ├── node
+    │   ├── NodeInfo.java
+    │   ├── Recipient.java
+    │   └── VersionInfo.java
+    ├── P2pClientFactory.java
+    ├── P2pClient.java
+    ├── PartyInfoServiceUtil.java
+    └── URLNormalizer.java
+```
+
+1.1 ActiveNode
+
+```
+Set<PublicKey> keys;  //节点公钥集合
+NodeUri uri;      //class NodeUri.private final String value
+Set<String> supportedVersions;
+```
+
+1.2 AutoDiscovery implements Discovery
+
+1.3 DefaultNetworkStore implements NetworkStore
+
+Set<ActiveNode> activeNodes = ConcurrentHashMap.newKeySet();
+
+remove/store/get activeNodes
+
+1.4 DisabledAutoDiscovery implements Discovery 
+
+NetworkStore networkStore
+
+Set<NodeUri> knownPeers
+
+1.5 DiscoveryHelperImpl implements DiscoveryHelper
+
+NodeInfo buildCurrent()
+
+NodeInfo buildRemoteNodeInfo(PublicKey recipientKey)
+
+Set<NodeInfo> buildRemoteNodeInfos()
+
+1.6 interface NodeInfo
+
+```
+default Map<PublicKey, String>；   一个公钥和url的映射集合
+Set<Recipient> getRecipients();   recipients 集合
+recipients包含 
+    private final PublicKey key;
+    private final String url;
+Set<String> supportedApiVersions();  string 集合
+```
+
+1.7 class Recipient
+
+```
+private final PublicKey key;
+private final String url;
+```
+
+1.8 interface VersionInfo
+
+```
+Set<String> supportedApiVersions();
+```
+
+1.9 interface PartyInfoServiceUtil
+
+boolean validateKeysToUrls(final NodeInfo existingPartyInfo, final NodeInfo newPartyInfo)
+
+根据pubkey检验existingPartyInfo中对应url是否一致
+
+### 7.2 tessera-jaxrs/partyinfo-model
+
+```
+model
+    ├── NodeInfoUtil.java
+    ├── PartyInfoBuilder.java
+    ├── PartyInfo.java
+    ├── Party.java
+    └── Recipient.java
+```
+
+2.1 interface NodeInfoUtil
+
+NodeInfo from(PartyInfo partyInfo, Collection<String> versions)
+
+2.2 class Party
+
+String url
+
+get the Party, URL
+
+2.3 class PartyInfo
+
+```
+String url;
+Set<Recipient> recipients;
+Set<Party> parties;
+```
+
+2.4 class PartyInfoBuilder
+
+```
+String uri;
+Map<PublicKey, String> recipients
+```
+
+2.5 class Recipient
+
+```
+PublicKey key;
+String url;
+```
+
+### 7.3 tessera-jaxrs/sync-jaxrs
+
+```
+ p2p
+    ├── P2PRestApp.java
+    ├── partyinfo
+    │   ├── PartyInfoBroadcaster.java
+    │   ├── PartyInfoParserException.java
+    │   ├── PartyInfoParser.java
+    │   ├── PartyStoreFactory.java
+    │   ├── PartyStore.java
+    │   ├── RestP2pClientFactory.java
+    │   ├── RestP2pClient.java
+    │   └── SimplePartyStore.java
+    ├── PartyInfoResource.java
+    ├── recovery
+    │   ├── PushBatchRequest.java
+    │   ├── RecoveryClientFactory.java
+    │   ├── RecoveryClient.java
+    │   ├── ResendBatchRequest.java
+    │   ├── ResendBatchResponse.java
+    │   ├── RestBatchTransactionRequesterFactory.java
+    │   ├── RestBatchTransactionRequester.java
+    │   ├── RestRecoveryClientFactory.java
+    │   ├── RestRecoveryClient.java
+    │   ├── RestResendBatchPublisherFactory.java
+    │   └── RestResendBatchPublisher.java
+    ├── RecoveryResource.java
+    ├── resend
+    │   ├── ResendClientFactory.java
+    │   ├── ResendClient.java
+    │   ├── ResendPartyStoreImpl.java
+    │   ├── ResendPartyStore.java
+    │   ├── ResendRequest.java
+    │   ├── ResendRequestType.java
+    │   ├── ResendResponse.java
+    │   ├── RestResendClientFactory.java
+    │   ├── RestResendClient.java
+    │   ├── SyncableParty.java
+    │   ├── SyncPoller.java
+    │   ├── TransactionRequesterImpl.java
+    │   └── TransactionRequester.java
+    └── TransactionResource.java
+```
+
+3.1 class PartyInfoBroadcaster implements Runnable
+
+```
+Discovery discovery;
+PartyInfoParser partyInfoParser;
+P2pClient p2pClient;
+Executor executor;
+PartyStore partyStore;
+```
+
+![qlc_ptm_partyInfo_run](http://github.com/qlcchain/qlc-ptm/raw/master/doc/qlc_ptm_partyInfo_run.png)
+
+3.2 interface PartyInfoParser extends BinaryEncoder
+
+PartyInfo from(final byte[] encoded)
+
+partyInfo 网络报文格式
+
+```
+long        urllength
+urllength   url
+long        numberOfRecipients
+	0----numberOfRecipients
+	long     				recipientKeyLength
+	recipientKeyLength		recipientKey
+	-----numberOfRecipients
+long		partyCount
+	0----partyCount
+	long					partyElementLength
+	partyElementLength		ptyData
+	-----partyCount
+```
+
+3.3 interface PartyStore
+
+Set<URI> parties
+
+3.4 RestP2pClient implements P2pClient
+
+实现sendPartyInfo
+
+## 8.性能优化思路
+
+### 8.1当前性能瓶颈分析
 
 cpu消耗打点数据
 
-### 1.send接口中computeShareKey处理
+#### 8.1.1.send接口中computeShareKey处理
 
 ![image](http://github.com/qlcchain/qlc-ptm/raw/master/doc/image-20201211101434783.png)
 
@@ -90,11 +314,11 @@ cpu消耗打点数据
 
 目前看是在计算sharedKey的时候最消耗cpu
 
-### 2.数据库处理中getConnection损耗
+#### 8.1.2.数据库处理中getConnection损耗
 
 ![image](http://github.com/qlcchain/qlc-ptm/raw/master/doc/image-20201211101609823.png)
 
-### 7.2性能优化思路
+### 8.2性能优化思路
 
 #### sharedKey计算处理增加缓存
 
@@ -119,3 +343,18 @@ cpu消耗打点数据
 | ---- | ---------- | ---------- | ---------- | -------------------- | --------------------- | ----------------- | ----------------- | -------------------- | ---------- |
 | POST | /send      | 70267      | 0          | 1200                 | 1351                  | 6                 | 51920             | 98                   | 557.24     |
 | None | Aggregated | 70267      | 0          | 1200                 | 1351                  | 6                 | 51920             | 98                   | 557.24     |
+
+2020修改了locust测试脚本之后
+
+受限于locust性能，测试机单核100%已经跑到了
+
+![image-20201216172251834](C:\Users\86189\AppData\Roaming\Typora\typora-user-images\image-20201216172251834.png)
+
+tps能到643，
+
+| Type | Name       | # requests | # failures | Median response time | Average response time | Min response time | Max response time | Average Content Size | Requests/s |
+| ---- | ---------- | ---------- | ---------- | -------------------- | --------------------- | ----------------- | ----------------- | -------------------- | ---------- |
+| POST | /send      | 57923      | 0          | 220                  | 852                   | 7                 | 23025             | 98                   | 643.23     |
+| None | Aggregated | 57923      | 0          | 220                  | 852                   | 7                 | 23025             | 98                   | 643.23     |
+
+这样就达到之前测试不带ptm的qlc节点处理性能，所以暂时系统吞吐性能瓶颈就不在ptm这侧了

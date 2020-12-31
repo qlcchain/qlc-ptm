@@ -51,27 +51,39 @@ HASH VARBINARY(100) NOT NULL, PRIMARY KEY (HASH)
 
 ## 3服务启动流程
 
+```
 a. 首先通过cli从配置文件config.json读取配置，根据配置创建运行时上下文（上下文持有当前节点公私钥对，peers列表等引用）
 b. 再将当前partyInfo保存到集合中(内存)
 c. 根据的serverConfigs循环创建ThirdPartyRestApp、P2PRestApp、Q2TRestApp(未包含EnclaveApplication)Restful服务
 d 启动服务监听
+```
+
+
 ![](https://img-blog.csdnimg.cn/20200328235721310.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2trMzkwOQ==,size_16,color_FFFFFF,t_70)
 
 ## 4交易流程
 
+```
 a.收到交易请求后，将请求交给TransactionManager处理，TransactionManager调用Enclave加密tx(详见【加密交易】)，根据加密的payload，调用MessageHashFactory生成tx Hash，
 b. 调用DAO将数据保存到数据库
 c. 循环接收者列表，将加密了的playload推送给其他ptm节点处理
 d.将tx hash使用base64编码后返回给qlc节点
+```
+
+
 ![](https://img-blog.csdnimg.cn/20200329131900327.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2trMzkwOQ==,size_16,color_FFFFFF,t_70)
 
 ## 5加密交易
 
+```
 a. 生成随机主密钥（RMK：NonceMasterKey）和随机数Nonce、接收者随机数Nonce
 b.使用步骤a的随机数Nonce和RMK加密message(Transaction Payload)。
 c. 根据发送者的公钥从keymanager中获取发送者私钥
 d.遍历接收者列表：根据发送者的私钥和接收者的公钥生成共享秘钥，根据共享密钥和接收者随机数加密RMK，最后返回RMK列表
 e.返回加密的playload、随机数、RMKs给Transaction Manager
+```
+
+
 ![](https://img-blog.csdnimg.cn/20200329141827544.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2trMzkwOQ==,size_16,color_FFFFFF,t_70)
 
 ## 6.SendRaw处理流程

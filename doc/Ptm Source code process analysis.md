@@ -2,6 +2,7 @@
 
 ## 1项目结构
 
+```
 ├── argon2 hash函数库,类似的函数还有pbkdf2、bcrypt、 scrypt
 ├── cli 使用picocli实现的命令行tessera（包含子命令keygen|keyupdate|admin）
 ├── config 配置数据模型,给各个模块使用的配置
@@ -25,6 +26,9 @@
 ├── tessera-recover recover and resend
 ├── test-utils 测试mock工具
 └── tests 测试用例
+```
+
+
 
 ## 2.数据库结构
 
@@ -269,7 +273,7 @@ Executor executor;
 PartyStore partyStore;
 ```
 
-![qlc_ptm_partyInfo_run](http://github.com/qlcchain/qlc-ptm/raw/master/doc/qlc_ptm_partyInfo_run.png)
+![image-qlc_ptm_partyInfo_run](http://github.com/qlcchain/qlc-ptm/raw/master/doc/qlc_ptm_partyInfo_run.png)
 
 3.2 interface PartyInfoParser extends BinaryEncoder
 

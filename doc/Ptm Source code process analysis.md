@@ -66,9 +66,9 @@ d 启动服务监听
 ```
 
 
-![](image\ptm_launcher.png)
+![image](image\ptmLauncher.png)
 
-![image](image\ptm_startup.png)
+![image](image\ptmStartup.png)
 
 ## 4交易流程
 
@@ -80,7 +80,7 @@ d.将tx hash使用base64编码后返回给qlc节点
 ```
 
 
-![](image\ptm_trans_send.png)
+![image](image\ptmTransSend.png)
 
 ## 5加密交易
 
@@ -93,13 +93,13 @@ e.返回加密的playload、随机数、RMKs给Transaction Manager
 ```
 
 
-![](image/ptm_enclave.png)
+![image](image/ptmEnclave.png)
 
 ## 6.SendRaw处理流程
 
 ptm隐私交易入口sendRaw
 
-![qlc_ptm_sendRaw](image/qlc_ptm_sendRaw.png)
+![image](image/ptmSendRaw.png)
 
 ## 7.ptm 节点发现同步流程
 
@@ -294,7 +294,7 @@ Executor executor;
 PartyStore partyStore;
 ```
 
-![image-qlc_ptm_partyInfo_run](image/qlc_ptm_partyInfo_run.png)
+![image](image/ptmPartyInfoRun.png)
 
 3.2 interface PartyInfoParser extends BinaryEncoder
 
@@ -335,7 +335,7 @@ V1.4.2-bete1版本测试时，发现在并发账户到300之后，ptm节点cpu�
 
 #### 8.1.1.send接口中computeShareKey处理
 
-![image](image/image-20201211101434783.png)
+![image](image/ptmProfile1.png)
 
 这个是在处理隐私数据时，遍历recipers，根据sender的prikey和对端的pubkey计算出一个sharedKey，然后用sharedKey加密数据
 
@@ -343,7 +343,7 @@ V1.4.2-bete1版本测试时，发现在并发账户到300之后，ptm节点cpu�
 
 #### 8.1.2.数据库处理中getConnection损耗
 
-![image](image/image-20201211101609823.png)
+![image](image/ptmProfile2.png)
 
 ### 8.2性能优化思路
 
@@ -375,7 +375,7 @@ V1.4.2-bete1版本测试时，发现在并发账户到300之后，ptm节点cpu�
 
 受限于locust性能，测试机单核100%已经跑到了
 
-![image-20201216172251834](image\image-20201216172251834.png)
+![image](image\ptmProfile3.png)
 
 tps能到643，
 

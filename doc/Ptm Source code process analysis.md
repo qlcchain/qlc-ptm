@@ -66,9 +66,9 @@ d 启动服务监听
 ```
 
 
-![image](image\ptmLauncher.png)
+![image](image/ptmLauncher.png)
 
-![image](image\ptmStartup.png)
+![image](image/ptmStartup.png)
 
 ## 4交易流程
 
@@ -80,7 +80,7 @@ d.将tx hash使用base64编码后返回给qlc节点
 ```
 
 
-![image](image\ptmTransSend.png)
+![image](image/ptmTransSend.png)
 
 ## 5加密交易
 
@@ -99,7 +99,7 @@ e.返回加密的playload、随机数、RMKs给Transaction Manager
 
 ptm隐私交易入口sendRaw
 
-![image](image/ptmSendRaw.png)
+![image](image/PtmSendRaw.png)
 
 ## 7.ptm 节点发现同步流程
 
@@ -375,7 +375,7 @@ V1.4.2-bete1版本测试时，发现在并发账户到300之后，ptm节点cpu�
 
 受限于locust性能，测试机单核100%已经跑到了
 
-![image](image\ptmProfile3.png)
+![image](image/ptmProfile3.png)
 
 tps能到643，
 

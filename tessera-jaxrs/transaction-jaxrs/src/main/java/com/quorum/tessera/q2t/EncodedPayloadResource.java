@@ -1,6 +1,9 @@
 package com.quorum.tessera.q2t;
 
-import com.quorum.tessera.api.*;
+import com.quorum.tessera.api.PayloadDecryptRequest;
+import com.quorum.tessera.api.PayloadEncryptResponse;
+import com.quorum.tessera.api.ReceiveResponse;
+import com.quorum.tessera.api.SendRequest;
 import com.quorum.tessera.data.MessageHash;
 import com.quorum.tessera.enclave.EncodedPayload;
 import com.quorum.tessera.enclave.PrivacyMode;
@@ -9,7 +12,13 @@ import com.quorum.tessera.enclave.TxHash;
 import com.quorum.tessera.encryption.PublicKey;
 import com.quorum.tessera.transaction.EncodedPayloadManager;
 import com.quorum.tessera.transaction.TransactionManager;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,18 +33,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.quorum.tessera.version.MultiTenancyVersion.MIME_TYPE_JSON_2_1;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 /**
- * The EncodedPayloadResource allows for manipulation of encrypted payloads
- * without having extra functionality attached to it that one would get with
- * the {@see TransactionResource}, such as savings payloads to database and
- * distributing payloads to peers.
+ * The EncodedPayloadResource allows for manipulation of encrypted payloads without having extra functionality attached
+ * to it that one would get with the {@see TransactionResource}, such as savings payloads to database and distributing
+ * payloads to peers.
  */
-@Api
+@Tag(name = "quorum-to-tessera")
 @Path("/encodedpayload")
-@Consumes(APPLICATION_JSON)
-@Produces(APPLICATION_JSON)
 public class EncodedPayloadResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EncodedPayloadResource.class);
@@ -46,72 +53,73 @@ public class EncodedPayloadResource {
 
     private final TransactionManager transactionManager;
 
-    public EncodedPayloadResource(final EncodedPayloadManager encodedPayloadManager,
-                                  final TransactionManager transactionManager) {
+    public EncodedPayloadResource(
+            final EncodedPayloadManager encodedPayloadManager, final TransactionManager transactionManager) {
         this.encodedPayloadManager = Objects.requireNonNull(encodedPayloadManager);
         this.transactionManager = Objects.requireNonNull(transactionManager);
     }
 
+    // hide this operation from swagger generation; the /encodedpayload/create operation is overloaded and must be documented in a single place
+    @Hidden
     @POST
     @Path("create")
-    @ApiOperation(value = "Send private transaction payload")
-    @ApiResponses({
-        @ApiResponse(code = 200, response = PayloadEncryptResponse.class, message = "The encrypted payload, listing the recipient data needed to decrypt the payload."),
-    })
-    public Response createEncodedPayload(
-        @ApiParam(value = "Request details containing the data to encrypt and recipients to encrypt for", name = "sendRequest", required = true)
-        @NotNull @Valid final SendRequest sendRequest
-    ) {
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public Response createEncodedPayload(@NotNull @Valid final SendRequest sendRequest) {
         LOGGER.info("Received request for custom payload encryption");
 
         final PublicKey sender =
-            Optional.ofNullable(sendRequest.getFrom())
-                .map(base64Decoder::decode)
-                .map(PublicKey::from)
-                .orElseGet(transactionManager::defaultPublicKey);
+                Optional.ofNullable(sendRequest.getFrom())
+                        .map(base64Decoder::decode)
+                        .map(PublicKey::from)
+                        .orElseGet(transactionManager::defaultPublicKey);
 
         final List<PublicKey> recipientList =
-            Stream.of(sendRequest)
-                .filter(sr -> Objects.nonNull(sr.getTo()))
-                .flatMap(s -> Stream.of(s.getTo()))
-                .map(base64Decoder::decode)
-                .map(PublicKey::from)
-                .collect(Collectors.toList());
+                Stream.of(sendRequest)
+                        .filter(sr -> Objects.nonNull(sr.getTo()))
+                        .flatMap(s -> Stream.of(s.getTo()))
+                        .map(base64Decoder::decode)
+                        .map(PublicKey::from)
+                        .collect(Collectors.toList());
 
         final Set<MessageHash> affectedTransactions =
-            Stream.ofNullable(sendRequest.getAffectedContractTransactions())
-                .flatMap(Arrays::stream)
-                .map(Base64.getDecoder()::decode)
-                .map(MessageHash::new)
-                .collect(Collectors.toSet());
+                Stream.ofNullable(sendRequest.getAffectedContractTransactions())
+                        .flatMap(Arrays::stream)
+                        .map(Base64.getDecoder()::decode)
+                        .map(MessageHash::new)
+                        .collect(Collectors.toSet());
 
         final byte[] execHash =
-            Optional.ofNullable(sendRequest.getExecHash()).map(String::getBytes).orElse(new byte[0]);
+                Optional.ofNullable(sendRequest.getExecHash()).map(String::getBytes).orElse(new byte[0]);
 
         final com.quorum.tessera.transaction.SendRequest request =
-            com.quorum.tessera.transaction.SendRequest.Builder.create()
-                .withRecipients(recipientList)
-                .withSender(sender)
-                .withPayload(sendRequest.getPayload())
-                .withExecHash(execHash)
-                .withPrivacyMode(PrivacyMode.fromFlag(sendRequest.getPrivacyFlag()))
-                .withAffectedContractTransactions(affectedTransactions)
-                .build();
+                com.quorum.tessera.transaction.SendRequest.Builder.create()
+                        .withRecipients(recipientList)
+                        .withSender(sender)
+                        .withPayload(sendRequest.getPayload())
+                        .withExecHash(execHash)
+                        .withPrivacyMode(PrivacyMode.fromFlag(sendRequest.getPrivacyFlag()))
+                        .withAffectedContractTransactions(affectedTransactions)
+                        .build();
 
         final EncodedPayload encodedPayload = encodedPayloadManager.create(request);
 
         final Map<String, String> affectedContractTransactionMap =
-            encodedPayload.getAffectedContractTransactions().entrySet()
-                .stream()
-                .collect(Collectors.toMap(e -> e.getKey().encodeToBase64(), e -> Base64.getEncoder().encodeToString(e.getValue().getData())));
+                encodedPayload.getAffectedContractTransactions().entrySet().stream()
+                        .collect(
+                                Collectors.toMap(
+                                        e -> e.getKey().encodeToBase64(),
+                                        e -> Base64.getEncoder().encodeToString(e.getValue().getData())));
 
         final PayloadEncryptResponse response = new PayloadEncryptResponse();
         response.setSenderKey(encodedPayload.getSenderKey().getKeyBytes());
         response.setCipherText(encodedPayload.getCipherText());
         response.setCipherTextNonce(encodedPayload.getCipherTextNonce().getNonceBytes());
-        response.setRecipientBoxes(encodedPayload.getRecipientBoxes().stream().map(RecipientBox::getData).collect(Collectors.toList()));
+        response.setRecipientBoxes(
+                encodedPayload.getRecipientBoxes().stream().map(RecipientBox::getData).collect(Collectors.toList()));
         response.setRecipientNonce(encodedPayload.getRecipientNonce().getNonceBytes());
-        response.setRecipientKeys(encodedPayload.getRecipientKeys().stream().map(PublicKey::getKeyBytes).collect(Collectors.toList()));
+        response.setRecipientKeys(
+                encodedPayload.getRecipientKeys().stream().map(PublicKey::getKeyBytes).collect(Collectors.toList()));
         response.setPrivacyMode(encodedPayload.getPrivacyMode().getPrivacyFlag());
         response.setAffectedContractTransactions(affectedContractTransactionMap);
         response.setExecHash(encodedPayload.getExecHash());
@@ -119,50 +127,198 @@ public class EncodedPayloadResource {
         return Response.ok(response).type(APPLICATION_JSON).build();
     }
 
+    // hide this operation from swagger generation; the /encodedpayload/decrypt operation is overloaded and must be documented in a single place
+    @Hidden
     @POST
     @Path("decrypt")
-    @ApiOperation(value = "Decrypts a given payload")
-    @ApiResponses({@ApiResponse(code = 200, response = ReceiveResponse.class, message = "The decrypted data with the exec hash and affected contracts")})
-    public Response receive(
-        @ApiParam("Encrypted payload that this node should attempt to decrypt")
-        @Valid @NotNull final PayloadDecryptRequest request
-    ) {
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
+    public Response decryptEncodedPayload(@Valid @NotNull final PayloadDecryptRequest request) {
         LOGGER.info("Received request to decrypt custom transaction");
 
         final Base64.Decoder decoder = Base64.getDecoder();
-        final Map<TxHash, byte[]> affectedTxns = request.getAffectedContractTransactions()
-            .entrySet()
-            .stream()
-            .collect(Collectors.toMap(e -> TxHash.from(decoder.decode(e.getKey())), e -> decoder.decode(e.getValue())));
+        final Map<TxHash, byte[]> affectedTxns =
+                request.getAffectedContractTransactions().entrySet().stream()
+                        .collect(
+                                Collectors.toMap(
+                                        e -> TxHash.from(decoder.decode(e.getKey())),
+                                        e -> decoder.decode(e.getValue())));
 
-        final EncodedPayload requestAsPayload = EncodedPayload.Builder.create()
-            .withSenderKey(PublicKey.from(request.getSenderKey()))
-            .withCipherText(request.getCipherText())
-            .withCipherTextNonce(request.getCipherTextNonce())
-            .withRecipientBoxes(request.getRecipientBoxes())
-            .withRecipientNonce(request.getRecipientNonce())
-            .withRecipientKeys(request.getRecipientKeys().stream().map(PublicKey::from).collect(Collectors.toList()))
-            .withPrivacyFlag(request.getPrivacyMode())
-            .withAffectedContractTransactions(affectedTxns)
-            .withExecHash(request.getExecHash())
-            .build();
+        final EncodedPayload requestAsPayload =
+                EncodedPayload.Builder.create()
+                        .withSenderKey(PublicKey.from(request.getSenderKey()))
+                        .withCipherText(request.getCipherText())
+                        .withCipherTextNonce(request.getCipherTextNonce())
+                        .withRecipientBoxes(request.getRecipientBoxes())
+                        .withRecipientNonce(request.getRecipientNonce())
+                        .withRecipientKeys(
+                                request.getRecipientKeys().stream().map(PublicKey::from).collect(Collectors.toList()))
+                        .withPrivacyFlag(request.getPrivacyMode())
+                        .withAffectedContractTransactions(affectedTxns)
+                        .withExecHash(request.getExecHash())
+                        .build();
 
-        final com.quorum.tessera.transaction.ReceiveResponse response
-            = encodedPayloadManager.decrypt(requestAsPayload, null);
+        final com.quorum.tessera.transaction.ReceiveResponse response =
+                encodedPayloadManager.decrypt(requestAsPayload, null);
 
         final ReceiveResponse receiveResponse = new ReceiveResponse();
         receiveResponse.setPrivacyFlag(response.getPrivacyMode().getPrivacyFlag());
         receiveResponse.setPayload(response.getUnencryptedTransactionData());
         receiveResponse.setAffectedContractTransactions(
-            response.getAffectedTransactions()
-                .stream()
-                .map(MessageHash::getHashBytes)
-                .map(Base64.getEncoder()::encodeToString)
-                .toArray(String[]::new)
-        );
+                response.getAffectedTransactions().stream()
+                        .map(MessageHash::getHashBytes)
+                        .map(Base64.getEncoder()::encodeToString)
+                        .toArray(String[]::new));
 
         Optional.ofNullable(response.getExecHash()).map(String::new).ifPresent(receiveResponse::setExecHash);
 
-        return Response.ok(receiveResponse).build();
+        return Response.ok(receiveResponse).type(APPLICATION_JSON).build();
+    }
+
+    // path /encodedpayload/create is overloaded (application/json and application/vnd.tessera-2.1+json); swagger annotations cannot handle situations like this so this operation documents both
+    @POST
+    @Path("create")
+    @Operation(
+            summary = "/encodedpayload/create",
+            operationId = "encrypt",
+            description = "encrypt a payload and return the result; does not store to the database or push to peers",
+            requestBody = @RequestBody(
+                content = {
+                    @Content(mediaType = APPLICATION_JSON, schema = @Schema(implementation = SendRequest.class)),
+                    @Content(mediaType = MIME_TYPE_JSON_2_1, schema = @Schema(implementation = SendRequest.class))
+                }
+            ))
+    @ApiResponse(
+            responseCode = "200",
+            description = "encrypted payload",
+            content = {
+                @Content(mediaType = APPLICATION_JSON, schema = @Schema(implementation = PayloadEncryptResponse.class)),
+                @Content(mediaType = MIME_TYPE_JSON_2_1, schema = @Schema(implementation = PayloadEncryptResponse.class))})
+    @Consumes(MIME_TYPE_JSON_2_1)
+    @Produces(MIME_TYPE_JSON_2_1)
+    public Response createEncodedPayload21(@NotNull @Valid final SendRequest sendRequest) {
+        LOGGER.info("Received request for custom payload encryption");
+
+        final PublicKey sender =
+                Optional.ofNullable(sendRequest.getFrom())
+                        .map(base64Decoder::decode)
+                        .map(PublicKey::from)
+                        .orElseGet(transactionManager::defaultPublicKey);
+
+        final List<PublicKey> recipientList =
+                Stream.of(sendRequest)
+                        .filter(sr -> Objects.nonNull(sr.getTo()))
+                        .flatMap(s -> Stream.of(s.getTo()))
+                        .map(base64Decoder::decode)
+                        .map(PublicKey::from)
+                        .collect(Collectors.toList());
+
+        final Set<MessageHash> affectedTransactions =
+                Stream.ofNullable(sendRequest.getAffectedContractTransactions())
+                        .flatMap(Arrays::stream)
+                        .map(Base64.getDecoder()::decode)
+                        .map(MessageHash::new)
+                        .collect(Collectors.toSet());
+
+        final byte[] execHash =
+                Optional.ofNullable(sendRequest.getExecHash()).map(String::getBytes).orElse(new byte[0]);
+
+        final com.quorum.tessera.transaction.SendRequest request =
+                com.quorum.tessera.transaction.SendRequest.Builder.create()
+                        .withRecipients(recipientList)
+                        .withSender(sender)
+                        .withPayload(sendRequest.getPayload())
+                        .withExecHash(execHash)
+                        .withPrivacyMode(PrivacyMode.fromFlag(sendRequest.getPrivacyFlag()))
+                        .withAffectedContractTransactions(affectedTransactions)
+                        .build();
+
+        final EncodedPayload encodedPayload = encodedPayloadManager.create(request);
+
+        final Map<String, String> affectedContractTransactionMap =
+                encodedPayload.getAffectedContractTransactions().entrySet().stream()
+                        .collect(
+                                Collectors.toMap(
+                                        e -> e.getKey().encodeToBase64(),
+                                        e -> Base64.getEncoder().encodeToString(e.getValue().getData())));
+
+        final PayloadEncryptResponse response = new PayloadEncryptResponse();
+        response.setSenderKey(encodedPayload.getSenderKey().getKeyBytes());
+        response.setCipherText(encodedPayload.getCipherText());
+        response.setCipherTextNonce(encodedPayload.getCipherTextNonce().getNonceBytes());
+        response.setRecipientBoxes(
+                encodedPayload.getRecipientBoxes().stream().map(RecipientBox::getData).collect(Collectors.toList()));
+        response.setRecipientNonce(encodedPayload.getRecipientNonce().getNonceBytes());
+        response.setRecipientKeys(
+                encodedPayload.getRecipientKeys().stream().map(PublicKey::getKeyBytes).collect(Collectors.toList()));
+        response.setPrivacyMode(encodedPayload.getPrivacyMode().getPrivacyFlag());
+        response.setAffectedContractTransactions(affectedContractTransactionMap);
+        response.setExecHash(encodedPayload.getExecHash());
+
+        return Response.ok(response).type(MIME_TYPE_JSON_2_1).build();
+    }
+
+    // path /encodedpayload/decrypt is overloaded (application/json and application/vnd.tessera-2.1+json); swagger annotations cannot handle situations like this so this operation documents both
+    @POST
+    @Path("decrypt")
+    @Operation(
+            summary = "/encodedpayload/decrypt",
+            operationId = "decrypt",
+            description =
+                    "decrypt an encrypted payload and return the result; does not store to the database or push to peers",
+            requestBody = @RequestBody(
+                content = {
+                    @Content(mediaType = APPLICATION_JSON, schema = @Schema(implementation = PayloadDecryptRequest.class)),
+                    @Content(mediaType = MIME_TYPE_JSON_2_1, schema = @Schema(implementation = PayloadDecryptRequest.class))
+                }
+            ))
+    @ApiResponse(
+            responseCode = "200",
+            description = "decrypted payload",
+            content = {
+                @Content(mediaType = APPLICATION_JSON, schema = @Schema(implementation = ReceiveResponse.class)),
+                @Content(mediaType = MIME_TYPE_JSON_2_1, schema = @Schema(implementation = ReceiveResponse.class))})
+    @Consumes(MIME_TYPE_JSON_2_1)
+    @Produces(MIME_TYPE_JSON_2_1)
+    public Response receive21(@Valid @NotNull final PayloadDecryptRequest request) {
+        LOGGER.info("Received request to decrypt custom transaction");
+
+        final Base64.Decoder decoder = Base64.getDecoder();
+        final Map<TxHash, byte[]> affectedTxns =
+                request.getAffectedContractTransactions().entrySet().stream()
+                        .collect(
+                                Collectors.toMap(
+                                        e -> TxHash.from(decoder.decode(e.getKey())),
+                                        e -> decoder.decode(e.getValue())));
+
+        final EncodedPayload requestAsPayload =
+                EncodedPayload.Builder.create()
+                        .withSenderKey(PublicKey.from(request.getSenderKey()))
+                        .withCipherText(request.getCipherText())
+                        .withCipherTextNonce(request.getCipherTextNonce())
+                        .withRecipientBoxes(request.getRecipientBoxes())
+                        .withRecipientNonce(request.getRecipientNonce())
+                        .withRecipientKeys(
+                                request.getRecipientKeys().stream().map(PublicKey::from).collect(Collectors.toList()))
+                        .withPrivacyFlag(request.getPrivacyMode())
+                        .withAffectedContractTransactions(affectedTxns)
+                        .withExecHash(request.getExecHash())
+                        .build();
+
+        final com.quorum.tessera.transaction.ReceiveResponse response =
+                encodedPayloadManager.decrypt(requestAsPayload, null);
+
+        final ReceiveResponse receiveResponse = new ReceiveResponse();
+        receiveResponse.setPrivacyFlag(response.getPrivacyMode().getPrivacyFlag());
+        receiveResponse.setPayload(response.getUnencryptedTransactionData());
+        receiveResponse.setAffectedContractTransactions(
+                response.getAffectedTransactions().stream()
+                        .map(MessageHash::getHashBytes)
+                        .map(Base64.getEncoder()::encodeToString)
+                        .toArray(String[]::new));
+
+        Optional.ofNullable(response.getExecHash()).map(String::new).ifPresent(receiveResponse::setExecHash);
+
+        return Response.ok(receiveResponse).type(MIME_TYPE_JSON_2_1).build();
     }
 }

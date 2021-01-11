@@ -1,5 +1,6 @@
 package com.quorum.tessera.p2p;
 
+import com.quorum.tessera.api.common.UpCheckResource;
 import com.quorum.tessera.api.filter.GlobalFilter;
 import com.quorum.tessera.api.filter.IPWhitelistFilter;
 import com.quorum.tessera.app.TesseraRestApplication;
@@ -15,20 +16,22 @@ import com.quorum.tessera.enclave.PayloadEncoder;
 import com.quorum.tessera.p2p.partyinfo.PartyInfoParser;
 import com.quorum.tessera.p2p.partyinfo.PartyStore;
 import com.quorum.tessera.recovery.workflow.BatchResendManager;
+import com.quorum.tessera.recovery.workflow.LegacyResendManager;
 import com.quorum.tessera.transaction.TransactionManager;
 import com.quorum.tessera.transaction.TransactionManagerFactory;
-import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.ApplicationPath;
 import java.util.Set;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toSet;
 
 /**
  * The main application that is submitted to the HTTP server Contains all the service classes created by the service
  * locator
  */
-@Api
 @GlobalFilter
 @ApplicationPath("/")
 public class P2PRestApp extends TesseraRestApplication {
@@ -54,7 +57,6 @@ public class P2PRestApp extends TesseraRestApplication {
 
     @Override
     public Set<Object> getSingletons() {
-
         RuntimeContext runtimeContext = RuntimeContext.getInstance();
         LOGGER.debug("Found configured peers {}", runtimeContext.getPeers());
 
@@ -77,16 +79,24 @@ public class P2PRestApp extends TesseraRestApplication {
         TransactionManager transactionManager = TransactionManagerFactory.create().create(config);
         BatchResendManager batchResendManager = BatchResendManager.create(config);
         PayloadEncoder payloadEncoder = PayloadEncoder.create();
+        final LegacyResendManager legacyResendManager = LegacyResendManager.create(config);
 
         final TransactionResource transactionResource =
-            new TransactionResource(transactionManager, batchResendManager, payloadEncoder);
+            new TransactionResource(transactionManager, batchResendManager, payloadEncoder, legacyResendManager);
         final RecoveryResource recoveryResource =
             new RecoveryResource(transactionManager, batchResendManager, payloadEncoder);
+        final UpCheckResource upCheckResource = new UpCheckResource(transactionManager);
 
         if (runtimeContext.isRecoveryMode()) {
-            return Set.of(partyInfoResource, iPWhitelistFilter, recoveryResource);
+            return Set.of(partyInfoResource, iPWhitelistFilter, recoveryResource, upCheckResource);
         }
-        return Set.of(partyInfoResource, iPWhitelistFilter, transactionResource);
+        return Set.of(partyInfoResource, iPWhitelistFilter, transactionResource, upCheckResource);
+    }
+
+    @Override
+    public Set<Class<?>> getClasses() {
+        return Stream.concat(super.getClasses().stream(), Stream.of(P2PApiResource.class))
+            .collect(toSet());
     }
 
     @Override

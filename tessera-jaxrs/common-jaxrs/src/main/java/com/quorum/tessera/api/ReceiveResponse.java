@@ -1,7 +1,6 @@
 package com.quorum.tessera.api;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.xml.bind.annotation.XmlMimeType;
 
@@ -10,21 +9,35 @@ import javax.xml.bind.annotation.XmlMimeType;
  *
  * <p>Contains a Base64 encoded string that is the decrypting payload of a transaction
  */
-@ApiModel
 public class ReceiveResponse {
 
+    @Schema(description = "decrypted ciphertext payload", type = "string", format = "base64")
     @XmlMimeType("base64Binary")
-    @ApiModelProperty("Encode response servicing receive requests")
     private byte[] payload;
 
-    @ApiModelProperty("Privacy flag")
+    @Schema(
+            description =
+                    "the privacy mode of the transaction\n* 0 = standard private\n* 1 = party protection\n* 3 = private-state validation",
+            allowableValues = {"0", "1", "3"})
     private int privacyFlag;
 
-    @ApiModelProperty("Affected contract transactions")
+    @Schema(
+            description = "encoded payload hashes identifying all affected private contracts after tx simulation",
+            format = "base64")
     private String[] affectedContractTransactions;
 
-    @ApiModelProperty("Execution hash")
+    @Schema(
+            description = "execution hash; merkle root of all affected contracts after tx simulation",
+            format = "base64")
     private String execHash;
+
+    @Schema(
+            description = "participant public keys of key pairs managed by the enclave of this Tessera instance",
+            format = "base64")
+    private String[] managedParties;
+
+    @Schema(description = "public key of the transaction sender", format = "base64")
+    private String sender;
 
     public ReceiveResponse() {}
 
@@ -58,5 +71,21 @@ public class ReceiveResponse {
 
     public void setExecHash(String execHash) {
         this.execHash = execHash;
+    }
+
+    public String[] getManagedParties() {
+        return managedParties;
+    }
+
+    public void setManagedParties(final String[] managedParties) {
+        this.managedParties = managedParties;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public void setSender(final String sender) {
+        this.sender = sender;
     }
 }

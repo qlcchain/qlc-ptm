@@ -44,7 +44,7 @@ public class Kalium implements Encryptor {
 
         return sharedKey;
     }
-    
+
     @Override
     public byte[] seal(
             final byte[] message, final Nonce nonce, final PublicKey publicKey, final PrivateKey privateKey) {

@@ -1,9 +1,9 @@
 package com.quorum.tessera.transaction;
 
+import com.quorum.tessera.data.MessageHash;
 import com.quorum.tessera.enclave.Enclave;
 import com.quorum.tessera.enclave.EncodedPayload;
 import com.quorum.tessera.encryption.PublicKey;
-import com.quorum.tessera.data.MessageHash;
 
 import java.util.List;
 
@@ -15,13 +15,17 @@ public interface TransactionManager {
 
     void delete(MessageHash messageHash);
 
-    ResendResponse resend(ResendRequest request);
-
     MessageHash storePayload(EncodedPayload transactionPayload);
 
     ReceiveResponse receive(ReceiveRequest request);
 
+    GetListsResponse getPayloadsByHash(GetPayloadsRequest request);
+
+    GetListsResponse getPayloadsByTime(GetPayloadsRequest request);
+
     StoreRawResponse store(StoreRawRequest storeRequest);
+
+    boolean upcheck();
 
     boolean isSender(MessageHash transactionHash);
 

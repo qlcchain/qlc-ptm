@@ -1,6 +1,7 @@
 package com.quorum.tessera.thirdparty;
 
 import com.quorum.tessera.api.common.RawTransactionResource;
+import com.quorum.tessera.api.common.UpCheckResource;
 import com.quorum.tessera.app.TesseraRestApplication;
 import com.quorum.tessera.config.AppType;
 import com.quorum.tessera.config.Config;
@@ -8,15 +9,15 @@ import com.quorum.tessera.core.api.ServiceFactory;
 import com.quorum.tessera.discovery.Discovery;
 import com.quorum.tessera.transaction.TransactionManager;
 import com.quorum.tessera.transaction.TransactionManagerFactory;
-import io.swagger.annotations.Api;
 
 import javax.ws.rs.ApplicationPath;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toSet;
+
 /** The third party API */
-@Api
 @ApplicationPath("/")
 public class ThirdPartyRestApp extends TesseraRestApplication {
 
@@ -37,8 +38,16 @@ public class ThirdPartyRestApp extends TesseraRestApplication {
         final RawTransactionResource rawTransactionResource = new RawTransactionResource(transactionManager);
         final PartyInfoResource partyInfoResource = new PartyInfoResource(discovery);
         final KeyResource keyResource = new KeyResource();
+        final UpCheckResource upCheckResource = new UpCheckResource(transactionManager);
 
-        return Stream.of(rawTransactionResource, partyInfoResource, keyResource).collect(Collectors.toSet());
+        return Stream.of(rawTransactionResource, partyInfoResource, keyResource, upCheckResource)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Class<?>> getClasses() {
+        return Stream.concat(super.getClasses().stream(), Stream.of(ThirdPartyApiResource.class))
+            .collect(toSet());
     }
 
     @Override

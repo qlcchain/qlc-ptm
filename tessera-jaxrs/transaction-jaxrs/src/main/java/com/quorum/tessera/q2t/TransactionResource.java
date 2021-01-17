@@ -486,6 +486,97 @@ public class TransactionResource {
         return Response.status(Status.OK).entity(payload).build();
     }
 
+    @Operation(
+            summary = "/getPayloadsByHash",
+            operationId = "getDecryptedPayloadsByHash",
+            description = "get payloads from database after hash, decrypt, and return")
+    @ApiResponse(
+            responseCode = "200",
+            description = "decrypted ciphertext payload",
+            content =
+            @Content(
+                    array =
+                    @ArraySchema(
+                            schema =
+                            @Schema(
+                                    type = "string",
+                                    format = "byte",
+                                    description = "decrypted ciphertext payload"))))
+    @GET
+    @Path("getPayloadsByHash")
+    @Consumes(APPLICATION_OCTET_STREAM)
+    @Produces(APPLICATION_OCTET_STREAM)
+    public Response getPayloadsByHash(
+            @Schema(description = "retrieve the store payloads from database after hash", format = "base64")
+            @ValidBase64
+            @NotNull
+            @HeaderParam(value = "c11n-key")
+                    String hash,
+            @Schema(
+                    description =
+                            "(optional) public key of recipient of the encrypted payload; used in decryption; if not provided, decryption is attempted with all known recipient keys in turn",
+                    format = "base64")
+            @ValidBase64
+            @HeaderParam(value = "c11n-to")
+                    String recipientKey,
+            @Schema(description ="number of payloads; if not provided, default use 10",format = "int")
+            @HeaderParam(value = "number")
+                    int maxNumber){
+        LOGGER.debug("Received getStoreListsByHash request for hash : {}, recipientKey: {}", hash, recipientKey);
+
+        MessageHash transactionHash = Optional.of(hash).map(Base64.getDecoder()::decode).map(MessageHash::new).get();
+        PublicKey recipient =
+                Optional.ofNullable(recipientKey).map(Base64.getDecoder()::decode).map(PublicKey::from).orElse(null);
+        com.quorum.tessera.transaction.GetPayloadsRequest request =
+                com.quorum.tessera.transaction.GetPayloadsRequest.Builder.create()
+                        .withTransactionHash(transactionHash)
+                        .withMaxNumber(maxNumber)
+                        .withRecipient(recipient)
+                        .build();
+
+        com.quorum.tessera.transaction.GetListsResponse receiveResponse = transactionManager.getPayloadsByHash(request);
+
+        List<byte[]> payloads = receiveResponse.getUnencryptedTransactionDates();
+
+        return Response.status(Status.OK).entity(payloads).build();
+    }
+
+    @GET
+    @Path("getPayloadsByTime")
+    @Consumes(APPLICATION_OCTET_STREAM)
+    @Produces(APPLICATION_OCTET_STREAM)
+    public Response getPayloadsByTime(
+            @Schema(description = "retrieve the store payloads from database after time", format = "base64")
+            @ValidBase64
+            @NotNull
+            @HeaderParam(value = "time")
+                    long startTime,
+            @Schema(
+                    description =
+                            "(optional) public key of recipient of the encrypted payload; used in decryption; if not provided, decryption is attempted with all known recipient keys in turn",
+                    format = "base64")
+            @ValidBase64
+            @HeaderParam(value = "c11n-to")
+                    String recipientKey,
+            @Schema(description ="number of payloads; if not provided, default use 10",format = "int")
+            @HeaderParam(value = "number")
+                    int maxNumber){
+        PublicKey recipient =
+                Optional.ofNullable(recipientKey).map(Base64.getDecoder()::decode).map(PublicKey::from).orElse(null);
+        com.quorum.tessera.transaction.GetPayloadsRequest request =
+                com.quorum.tessera.transaction.GetPayloadsRequest.Builder.create()
+                        .withTransactionStartTime(startTime)
+                        .withMaxNumber(maxNumber)
+                        .withRecipient(recipient)
+                        .build();
+
+        com.quorum.tessera.transaction.GetListsResponse receiveResponse = transactionManager.getPayloadsByTime(request);
+
+        List<byte[]> payloads = receiveResponse.getUnencryptedTransactionDates();
+
+        return Response.status(Status.OK).entity(payloads).build();
+    }
+
     @Deprecated
     @Operation(summary = "/delete", operationId = "deleteDeprecated", description = "delete payload from database")
     @ApiResponse(

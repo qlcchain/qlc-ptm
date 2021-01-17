@@ -19,6 +19,10 @@ public interface TransactionManager {
 
     ReceiveResponse receive(ReceiveRequest request);
 
+    GetListsResponse getPayloadsByHash(GetPayloadsRequest request);
+
+    GetListsResponse getPayloadsByTime(GetPayloadsRequest request);
+
     StoreRawResponse store(StoreRawRequest storeRequest);
 
     boolean upcheck();

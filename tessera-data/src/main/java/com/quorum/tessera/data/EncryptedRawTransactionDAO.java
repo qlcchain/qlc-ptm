@@ -52,4 +52,22 @@ public interface EncryptedRawTransactionDAO {
      * @return The list of requested rows from the database
      */
     List<EncryptedRawTransaction> retrieveTransactions(int offset, int maxResult);
+
+    /**
+     * Retrieves a list of transactions stored in the database
+     *
+     * @param hash the start hash
+     * @param maxResult the maximum number of records to return
+     * @return The list of requested rows from the database
+     */
+    List<EncryptedRawTransaction> retrieveListsByHash(MessageHash hash, int maxResult);
+
+    /**
+     * Retrieves a list of transactions stored in the database
+     *
+     * @param timeStamp the start timeStamp
+     * @param maxResult the maximum number of records to return
+     * @return The list of requested rows from the database
+     */
+    List<EncryptedRawTransaction> retrieveListsByTime(long timeStamp, int maxResult);
 }

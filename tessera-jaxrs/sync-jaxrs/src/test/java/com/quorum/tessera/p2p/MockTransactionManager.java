@@ -69,4 +69,10 @@ public class MockTransactionManager implements TransactionManager, TransactionMa
     public Optional<TransactionManager> transactionManager() {
         return Optional.of(this);
     }
+
+    @Override
+    public GetListsResponse getPayloadsByHash(GetPayloadsRequest request){return null;};
+
+    @Override
+    public GetListsResponse getPayloadsByTime(GetPayloadsRequest request){return null;};
 }

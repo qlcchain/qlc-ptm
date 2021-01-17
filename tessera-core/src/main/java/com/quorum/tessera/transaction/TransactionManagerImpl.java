@@ -437,6 +437,110 @@ public class TransactionManagerImpl implements TransactionManager {
                 .build();
     }
 
+    @Override
+    public GetListsResponse getPayloadsByHash(GetPayloadsRequest request) {
+        final MessageHash hash = request.getTransactionHash();
+        List<byte[]> respondPayloads = new ArrayList<byte[]>();
+        final int maxNumber = request.getMaxNumber();
+        LOGGER.info("Lookup transaction {}", hash);
+
+        if (request.isRaw()) {
+            final List<EncryptedRawTransaction> encryptedRawTransactions =
+                    encryptedRawTransactionDAO.retrieveListsByHash(hash, maxNumber);
+            for (int i = 0; i < encryptedRawTransactions.size(); i++) {
+                EncryptedRawTransaction encryptedRawTransaction = encryptedRawTransactions.get(i);
+                PublicKey senderKey = PublicKey.from(encryptedRawTransaction.getSender());
+                RawTransaction rawTransaction =
+                        new RawTransaction(
+                                encryptedRawTransaction.getEncryptedPayload(),
+                                encryptedRawTransaction.getEncryptedKey(),
+                                new Nonce(encryptedRawTransaction.getNonce()),
+                                senderKey);
+                respondPayloads.add(enclave.unencryptRawPayload(rawTransaction));
+
+            }
+            return GetListsResponse.Builder.create()
+                    .withPrivacyMode(PrivacyMode.STANDARD_PRIVATE)
+                    .withUnencryptedTransactionDates(respondPayloads)
+                    .build();
+        }
+
+        final List<EncryptedTransaction> encryptedTransactions =
+                encryptedTransactionDAO.retrieveListsByHash(hash, maxNumber);
+        for (int i = 0; i < encryptedTransactions.size(); i++) {
+            EncryptedTransaction encryptedTransaction = encryptedTransactions.get(i);
+            EncodedPayload payload =
+                    Optional.of(encryptedTransaction)
+                            .map(EncryptedTransaction::getEncodedPayload)
+                            .map(payloadEncoder::decode)
+                            .orElseThrow(() -> new IllegalStateException("Unable to decode previously encoded payload"));
+            PublicKey recipientKey =
+                    request.getRecipient()
+                            .orElse(
+                                    searchForRecipientKey(payload)
+                                            .orElseThrow(
+                                                    () ->new RecipientKeyNotFoundException(
+                                                                    "No suitable recipient keys found to decrypt payload for : " + hash)));
+            respondPayloads.add(enclave.unencryptTransaction(payload, recipientKey));
+        }
+        return GetListsResponse.Builder.create()
+                .withPrivacyMode(PrivacyMode.STANDARD_PRIVATE)
+                .withUnencryptedTransactionDates(respondPayloads)
+                .build();
+    }
+
+    @Override
+    public GetListsResponse getPayloadsByTime(GetPayloadsRequest request) {
+        final long startTime = request.getStartTimeStamp();
+        List<byte[]> respondPayloads = new ArrayList<byte[]>();
+        final int maxNumber = request.getMaxNumber();
+        LOGGER.info("Lookup transaction after time {}", startTime);
+
+        if (request.isRaw()) {
+            final List<EncryptedRawTransaction> encryptedRawTransactions =
+                    encryptedRawTransactionDAO.retrieveListsByTime(startTime, maxNumber);
+            for (int i = 0; i < encryptedRawTransactions.size(); i++) {
+                EncryptedRawTransaction encryptedRawTransaction = encryptedRawTransactions.get(i);
+                PublicKey senderKey = PublicKey.from(encryptedRawTransaction.getSender());
+                RawTransaction rawTransaction =
+                        new RawTransaction(
+                                encryptedRawTransaction.getEncryptedPayload(),
+                                encryptedRawTransaction.getEncryptedKey(),
+                                new Nonce(encryptedRawTransaction.getNonce()),
+                                senderKey);
+                respondPayloads.add(enclave.unencryptRawPayload(rawTransaction));
+
+            }
+            return GetListsResponse.Builder.create()
+                    .withPrivacyMode(PrivacyMode.STANDARD_PRIVATE)
+                    .withUnencryptedTransactionDates(respondPayloads)
+                    .build();
+        }
+
+        final List<EncryptedTransaction> encryptedTransactions =
+                encryptedTransactionDAO.retrieveListsByTime(startTime, maxNumber);
+        for (int i = 0; i < encryptedTransactions.size(); i++) {
+            EncryptedTransaction encryptedTransaction = encryptedTransactions.get(i);
+            EncodedPayload payload =
+                    Optional.of(encryptedTransaction)
+                            .map(EncryptedTransaction::getEncodedPayload)
+                            .map(payloadEncoder::decode)
+                            .orElseThrow(() -> new IllegalStateException("Unable to decode previously encoded payload"));
+            PublicKey recipientKey =
+                    request.getRecipient()
+                            .orElse(
+                                    searchForRecipientKey(payload)
+                                            .orElseThrow(
+                                                    () ->new RecipientKeyNotFoundException(
+                                                                    "No suitable recipient keys found to decrypt payload after : "+ startTime)));
+            respondPayloads.add(enclave.unencryptTransaction(payload, recipientKey));
+        }
+        return GetListsResponse.Builder.create()
+                .withPrivacyMode(PrivacyMode.STANDARD_PRIVATE)
+                .withUnencryptedTransactionDates(respondPayloads)
+                .build();
+    }
+
     private Optional<PublicKey> searchForRecipientKey(final EncodedPayload payload) {
         for (final PublicKey potentialMatchingKey : enclave.getPublicKeys()) {
             try {

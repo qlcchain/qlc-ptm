@@ -116,4 +116,30 @@ public class EncryptedRawTransactionDAOImpl implements EncryptedRawTransactionDA
         }
         return Hex.toHexString(val);
     }
+
+    @Override
+    public List<EncryptedRawTransaction> retrieveListsByHash(MessageHash hash, int maxResult) {
+        //定义SQL
+        String sql = "SELECT ENCODED_PAYLOAD FROM ENCRYPTED_TRANSACTION WHERE TIMESTAMP > (SELECT TIMESTAMP FROM ENCRYPTED_TRANSACTION WHERE HASH=" + hash;
+        LOGGER.debug("Fetching batch(sql:{}, maxResult:{}) of EncryptedRawTransaction entries", sql, maxResult);
+
+        return entityManagerTemplate.execute(
+                entityManager ->
+                        entityManager.createNativeQuery(sql)
+                                .setMaxResults(maxResult)
+                                .getResultList());
+    }
+
+    @Override
+    public List<EncryptedRawTransaction> retrieveListsByTime(long startTime, int maxResult) {
+        //定义SQL
+        String sql = "SELECT ENCODED_PAYLOAD FROM ENCRYPTED_TRANSACTION WHERE TIMESTAMP > " + startTime;
+        LOGGER.debug("Fetching batch(sql:{}, maxResult:{}) of EncryptedRawTransaction entries", sql, maxResult);
+
+        return entityManagerTemplate.execute(
+                entityManager ->
+                        entityManager.createNativeQuery(sql)
+                                .setMaxResults(maxResult)
+                                .getResultList());
+    }
 }

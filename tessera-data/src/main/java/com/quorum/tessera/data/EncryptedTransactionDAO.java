@@ -80,4 +80,22 @@ public interface EncryptedTransactionDAO {
      * @return true if data store is up and running ok, else false
      */
     boolean upcheck();
+
+    /**
+     * Retrieves a list of transactions stored in the database
+     *
+     * @param hash the start hash
+     * @param maxResult the maximum number of records to return
+     * @return The list of requested rows from the database
+     */
+    List<EncryptedTransaction> retrieveListsByHash(MessageHash hash, int maxResult);
+
+    /**
+     * Retrieves a list of transactions stored in the database
+     *
+     * @param timeStamp the start timeStamp
+     * @param maxResult the maximum number of records to return
+     * @return The list of requested rows from the database
+     */
+    List<EncryptedTransaction> retrieveListsByTime(long timeStamp, int maxResult);
 }

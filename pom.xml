@@ -1119,7 +1119,7 @@
             <dependency>
                 <groupId>com.github.jnr</groupId>
                 <artifactId>jnr-unixsocket</artifactId>
-                <version>0.28</version>
+                <version>0.38.6</version>
             </dependency>
 
             <dependency>
@@ -1397,7 +1397,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.1</version>
                 <configuration>
                     <reportSets>
                         <EnclaveImplreportSet>

@@ -4,7 +4,7 @@ plugins {
     id 'com.diffplug.gradle.spotless' version '3.25.0'
     id 'com.github.ben-manes.versions' version '0.8'
     id 'checkstyle'
-
+    id 'eclipse'
 }
 
 ext {
@@ -38,7 +38,7 @@ allprojects {
                 testCompile "com.openpojo:openpojo:0.8.10"
                 testCompile "com.github.stefanbirkner:system-rules:1.18.0"
                 testCompile "nl.jqno.equalsverifier:equalsverifier:3.4.1"
-                compile "com.github.jnr:jnr-unixsocket:0.28"
+                compile "com.github.jnr:jnr-unixsocket:0.38.6"
                 compile "de.mkammerer:argon2-jvm:2.5"
                 compile "javax.validation:validation-api:2.0.1.Final"
                 compile "javax.ws.rs:javax.ws.rs-api:2.1"

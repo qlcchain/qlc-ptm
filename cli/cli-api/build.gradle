@@ -1,6 +1,7 @@
 
 dependencies {
     compile 'info.picocli:picocli'
+    compile 'com.google.code.gson:gson:2.8.6'
     compile 'org.apache.commons:commons-lang3:3.7'
     compile project(':config')
     compile project(':shared')
